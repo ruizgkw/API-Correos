@@ -80,31 +80,39 @@ class MailParser:
                     return {
                         "success": True,
                         "extraction_type": "DIRECT_TEXT",
-                        "extracted_code": code.strip(),
+                        "extracted_code": re.sub(r'\s+', '', code),
                         "extraction_url": None,
                         "raw_subject": email_data.get("subject")
                     }
 
-            # 2. Patrón Estándar Fallback: Código numérico de 6 dígitos (incluso si Disney lo envía formateado con espacios entre dígitos ej. 7 6 2 7 4 0)
-            patterns = [
-                r'\b(\d(?:\s*\d){5})\b',  # Captura 6 dígitos separados por espacios opcionales (ej: 7 6 2 7 4 0 o 762740)
-                r'(?:código|code|pin|verificación)[^\d]*(\d{6})\b',
-                r'\b(\d{6})\b'
-            ]
+            # 2. Patrones robustos para secuencias de 6 dígitos aisladas (pegados o separados por espacios/saltos de línea)
+            # Ejemplos: "7 6 2 7 4 0", "4 4 2 0 7 9", "762740"
+            digits_with_spaces = re.findall(r'(?:\b|\s)(\d(?:\s*\d){5})(?:\b|\s)', full_text)
+            for candidate in digits_with_spaces:
+                clean_candidate = re.sub(r'\s+', '', candidate)
+                if len(clean_candidate) == 6 and clean_candidate.isdigit():
+                    return {
+                        "success": True,
+                        "extraction_type": "DIRECT_TEXT",
+                        "extracted_code": clean_candidate,
+                        "extraction_url": None,
+                        "raw_subject": email_data.get("subject")
+                    }
 
-            for pattern in patterns:
-                match = re.search(pattern, full_text, re.IGNORECASE)
-                if match:
-                    # Eliminar espacios entre los dígitos extraídos
-                    clean_code = re.sub(r'\s+', '', match.group(1))
-                    if len(clean_code) == 6:
-                        return {
-                            "success": True,
-                            "extraction_type": "DIRECT_TEXT",
-                            "extracted_code": clean_code,
-                            "extraction_url": None,
-                            "raw_subject": email_data.get("subject")
-                        }
+            # 3. Fallback directo en el cuerpo HTML sin strip para capturar estructuras <span>7</span><span>6</span>...
+            html_digits = re.findall(r'(?:\b|\s)(\d(?:\s*<[^>]+>\s*\d){5})(?:\b|\s)', html_body)
+            for candidate in html_digits:
+                clean_candidate = re.sub(r'<[^>]+>', '', candidate)
+                clean_candidate = re.sub(r'\s+', '', clean_candidate)
+                if len(clean_candidate) == 6 and clean_candidate.isdigit():
+                    return {
+                        "success": True,
+                        "extraction_type": "DIRECT_TEXT",
+                        "extracted_code": clean_candidate,
+                        "extraction_url": None,
+                        "raw_subject": email_data.get("subject")
+                    }
+
 
 
             return {
