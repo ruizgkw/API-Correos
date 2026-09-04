@@ -85,9 +85,9 @@ class MailParser:
                         "raw_subject": email_data.get("subject")
                     }
 
-            # 2. Patrón Estándar Fallback: Código numérico de 6 dígitos
-            # Evitamos números muy largos o dentro de URLs
+            # 2. Patrón Estándar Fallback: Código numérico de 6 dígitos (incluso si Disney lo envía formateado con espacios entre dígitos ej. 7 6 2 7 4 0)
             patterns = [
+                r'\b(\d(?:\s*\d){5})\b',  # Captura 6 dígitos separados por espacios opcionales (ej: 7 6 2 7 4 0 o 762740)
                 r'(?:código|code|pin|verificación)[^\d]*(\d{6})\b',
                 r'\b(\d{6})\b'
             ]
@@ -95,14 +95,17 @@ class MailParser:
             for pattern in patterns:
                 match = re.search(pattern, full_text, re.IGNORECASE)
                 if match:
-                    code = match.group(1)
-                    return {
-                        "success": True,
-                        "extraction_type": "DIRECT_TEXT",
-                        "extracted_code": code.strip(),
-                        "extraction_url": None,
-                        "raw_subject": email_data.get("subject")
-                    }
+                    # Eliminar espacios entre los dígitos extraídos
+                    clean_code = re.sub(r'\s+', '', match.group(1))
+                    if len(clean_code) == 6:
+                        return {
+                            "success": True,
+                            "extraction_type": "DIRECT_TEXT",
+                            "extracted_code": clean_code,
+                            "extraction_url": None,
+                            "raw_subject": email_data.get("subject")
+                        }
+
 
             return {
                 "success": False,
