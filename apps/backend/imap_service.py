@@ -96,23 +96,23 @@ class IMAPService:
                 logger.error(f"Fallo al seleccionar INBOX para {email_address}")
                 return None
 
-            # Construir criterio de búsqueda IMAP
-            # Ejemplo: FROM "info@account.netflix.com"
+            # Construir criterio de búsqueda IMAP flexible por remitente
             search_query = f'FROM "{sender_filter}"'
-            
-            # Si se proporciona fecha/hora desde cuándo buscar (ej. desde el clic del usuario)
-            if since_datetime:
-                date_str = since_datetime.strftime("%d-%b-%Y")
-                search_query += f' SINCE {date_str}'
 
             search_res = await imap_client.search(search_query)
-            if search_res.result != "OK" or not search_res.lines[0]:
-                logger.info(f"No se encontraron correos para filtro {search_query} en {email_address}")
+            
+            # Si el filtro específico no trae nada (ej subdominio dinámico), traer los últimos correos del INBOX
+            if search_res.result != "OK" or not search_res.lines or not search_res.lines[0]:
+                logger.info(f"Filtro estricto {search_query} sin resultados en {email_address}. Ejecutando búsqueda general...")
+                search_res = await imap_client.search("ALL")
+
+            if search_res.result != "OK" or not search_res.lines or not search_res.lines[0]:
                 return None
 
             msg_ids = search_res.lines[0].split()
             if not msg_ids:
                 return None
+
 
             # Obtener el último correo (el ID más reciente)
             latest_id = msg_ids[-1].decode('utf-8')

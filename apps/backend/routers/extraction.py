@@ -61,9 +61,10 @@ async def get_platforms(db: AsyncSession = Depends(get_db)):
             StreamingPlatform(
                 name="Disney+",
                 extraction_type=ExtractionType.DIRECT_TEXT,
-                sender_email="disneyplus@mail.disneyplus.com",
+                sender_email="disneyplus.com",
                 subject_filter="código"
             ),
+
             StreamingPlatform(
                 name="HBO Max / Max",
                 extraction_type=ExtractionType.DIRECT_TEXT,
