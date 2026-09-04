@@ -24,9 +24,10 @@ import os
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
-FRONTEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend"))
+FRONTEND_DIR = "/apps/frontend" if os.path.exists("/apps/frontend") else os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend"))
 
 app.mount("/static", StaticFiles(directory=os.path.join(FRONTEND_DIR, "js")), name="static")
+
 
 @app.get("/favicon.svg", include_in_schema=False)
 async def favicon():
