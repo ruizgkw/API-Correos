@@ -30,15 +30,23 @@ class LogStatus(str, enum.Enum):
     FAILED = "FAILED"
     RATE_LIMITED = "RATE_LIMITED"
 
+class UserRole(str, enum.Enum):
+    CLIENT = "CLIENT"
+    ADMIN = "ADMIN"
+
 class User(Base):
     __tablename__ = "users"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     telegram_chat_id = Column(BigInteger, unique=True, nullable=False, index=True)
+    username = Column(String(100), unique=True, nullable=True)
+    hashed_password = Column(String(255), nullable=True)
+    role = Column(SQLEnum(UserRole), nullable=False, default=UserRole.CLIENT)
     is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     logs = relationship("ExtractionLog", back_populates="user", cascade="all, delete-orphan")
+
 
 class StreamingPlatform(Base):
     __tablename__ = "streaming_platforms"

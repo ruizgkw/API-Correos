@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from database import init_db
-from routers import auth, extraction
+from routers import auth, extraction, admin
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -18,8 +18,10 @@ app = FastAPI(
 
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(extraction.router, prefix="/api/v1")
+app.include_router(admin.router, prefix="/api/v1")
 
 @app.get("/health", tags=["Health"])
 async def health_check():
     return {"status": "ok", "service": "backend-api"}
+
 

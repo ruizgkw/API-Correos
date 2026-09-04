@@ -34,3 +34,36 @@ class ExtractionResponse(BaseModel):
     cooldown_seconds: int = 420
     message: str
 
+# --- Esquemas Admin ---
+class AdminLoginPassRequest(BaseModel):
+    username: str = Field(..., example="admin")
+    password: str = Field(..., example="AdminPass123!")
+
+class Admin2FAVerifyRequest(BaseModel):
+    username: str = Field(..., example="admin")
+    otp_code: str = Field(..., min_length=6, max_length=6, example="123456")
+
+class MailAccountCreateRequest(BaseModel):
+    email: str = Field(..., example="cuenta1@midominio.com")
+    provider: str = Field("GENERIC_IMAP", example="GMAIL")
+    auth_type: str = Field("APP_PASSWORD", example="APP_PASSWORD")
+    password_or_token: str = Field(..., example="abcd-efgh-ijkl-mnop")
+    imap_server: Optional[str] = Field("imap.gmail.com", example="imap.gmail.com")
+    imap_port: Optional[int] = Field(993, example=993)
+
+class MailAccountResponse(BaseModel):
+    id: str
+    email: str
+    provider: str
+    auth_type: str
+    imap_server: Optional[str]
+    imap_port: Optional[int]
+    is_active: bool
+
+class ClientUserResponse(BaseModel):
+    id: str
+    telegram_chat_id: int
+    is_active: bool
+    created_at: str
+
+
