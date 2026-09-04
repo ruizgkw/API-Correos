@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Gradiente de fondo ultra-oscuro cibernético -->
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0d1117"/>
+      <stop offset="50%" stop-color="#161b22"/>
+      <stop offset="100%" stop-color="#0d1117"/>
+    </linearGradient>
+
+    <!-- Gradiente para el Rayo / Código (Verde Neón GitHub & Streaming Glow) -->
+    <linearGradient id="bolt-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3fb950"/>
+      <stop offset="50%" stop-color="#2ea043"/>
+      <stop offset="100%" stop-color="#238636"/>
+    </linearGradient>
+
+    <!-- Gradiente para el Envoltorio del Sobre (Azul Cian Neón) -->
+    <linearGradient id="mail-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#58a6ff"/>
+      <stop offset="100%" stop-color="#1f6feb"/>
+    </linearGradient>
+
+    <!-- Filtro de Resplandor Neón (Glow Effect) -->
+    <filter id="neon-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Fondo redondeado estilo GitHub App Badge -->
+  <rect width="512" height="512" rx="112" fill="url(#bg-grad)" stroke="#30363d" stroke-width="12"/>
+
+  <!-- Estructura del Sobre de Correo Abierto (Cyber Mail) -->
+  <g filter="url(#neon-glow)">
+    <!-- Cuerpo del Sobre -->
+    <rect x="96" y="192" width="320" height="200" rx="24" fill="none" stroke="url(#mail-grad)" stroke-width="20" stroke-linejoin="round"/>
+    
+    <!-- Solapa Abierta -->
+    <path d="M 96 216 L 256 312 L 416 216" fill="none" stroke="url(#mail-grad)" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Rayo central de Extracción Rápida (Streaming Lightning Code) -->
+  <g filter="url(#neon-glow)">
+    <polygon points="276,80 180,256 256,256 236,432 332,256 256,256" fill="url(#bolt-grad)" stroke="#2ea043" stroke-width="6"/>
+  </g>
+
+  <!-- Puntos de Conexión de Datos (Signal Nodes) -->
+  <circle cx="120" cy="120" r="16" fill="#58a6ff" />
+  <circle cx="392" cy="120" r="16" fill="#3fb950" />
+</svg>

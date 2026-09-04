@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - API Correos</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        ghBg: '#0d1117',
+                        ghCard: '#161b22',
+                        ghBorder: '#30363d',
+                        ghGreen: '#238636',
+                        ghGreenHover: '#2ea043',
+                        ghBlue: '#58a6ff',
+                        ghText: '#c9d1d9',
+                        ghMuted: '#8b949e'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-ghBg text-ghText font-sans min-h-screen flex flex-col antialiased">
+
+    <!-- Header Admin GitHub Style -->
+    <header class="border-b border-ghBorder bg-ghCard px-6 py-4 flex justify-between items-center">
+        <div class="flex items-center space-x-3">
+            <img src="/favicon.svg" alt="Logo" class="w-8 h-8">
+            <span class="font-bold text-lg text-white">Panel Administrador</span>
+            <span class="bg-red-950 text-red-400 text-xs px-2.5 py-0.5 rounded-full border border-red-800/50 font-mono">2FA PROTECTED</span>
+        </div>
+        <div id="adminBadge" class="hidden flex items-center space-x-4">
+            <span class="text-xs text-ghMuted font-mono" id="adminUserSpan"></span>
+            <a href="/" class="text-xs text-ghBlue hover:underline">Vista Cliente</a>
+            <button id="adminLogoutBtn" class="text-xs text-red-400 hover:underline">Cerrar Sesión</button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow p-6 max-w-6xl mx-auto w-full">
+
+        <!-- 1. LOGIN ADMIN 2FA -->
+        <div id="adminAuthSection" class="w-full max-w-md mx-auto bg-ghCard border border-ghBorder rounded-xl p-8 shadow-2xl mt-12">
+            <div class="text-center mb-6">
+                <h1 class="text-xl font-bold text-white">Acceso Administrador</h1>
+                <p class="text-xs text-ghMuted mt-1">Requiere credenciales y verificación 2FA por Telegram.</p>
+            </div>
+
+            <!-- Paso 1: Usuario y Password -->
+            <form id="adminPassForm" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-ghMuted mb-1">Usuario</label>
+                    <input type="text" id="adminUsername" required value="admin" class="w-full bg-ghBg border border-ghBorder rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-ghBlue">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-ghMuted mb-1">Contraseña</label>
+                    <input type="password" id="adminPassword" required placeholder="••••••••" class="w-full bg-ghBg border border-ghBorder rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-ghBlue">
+                </div>
+                <button type="submit" id="btnAdminPass" class="w-full bg-ghGreen hover:bg-ghGreenHover text-white font-medium py-2.5 rounded-lg text-sm transition">
+                    Validar Contraseña
+                </button>
+            </form>
+
+            <!-- Paso 2: 2FA Telegram Code -->
+            <form id="admin2FAForm" class="space-y-4 hidden mt-4">
+                <div class="p-3 bg-amber-950/40 border border-amber-800/50 rounded-lg text-xs text-amber-400">
+                    Se envió un código 2FA a tu Telegram de Administrador.
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-ghMuted mb-1">Código 2FA (6 dígitos)</label>
+                    <input type="text" id="admin2FACode" required maxlength="6" class="w-full bg-ghBg border border-ghBorder rounded-lg px-4 py-2 text-center text-lg font-mono text-white focus:outline-none focus:border-ghBlue">
+                </div>
+                <button type="submit" id="btnAdmin2FA" class="w-full bg-ghBlue hover:bg-blue-600 text-white font-medium py-2.5 rounded-lg text-sm transition">
+                    Ingresar al Panel
+                </button>
+            </form>
+
+            <div id="adminAuthAlert" class="mt-4 hidden p-3 rounded-lg text-xs"></div>
+        </div>
+
+
+        <!-- 2. DASHBOARD DE ADMINISTRACIÓN -->
+        <div id="adminDashboard" class="hidden space-y-8">
+            
+            <!-- Controles Superiores -->
+            <div class="flex justify-between items-center bg-ghCard border border-ghBorder p-4 rounded-xl">
+                <div>
+                    <h2 class="text-base font-semibold text-white">Gestión de Cuentas de Correo</h2>
+                    <p class="text-xs text-ghMuted">Configura y prueba las cuentas IMAP que extraerán los códigos.</p>
+                </div>
+                <button id="btnOpenAddMailModal" class="bg-ghGreen hover:bg-ghGreenHover text-white text-xs px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2">
+                    <span>+ Agregar Cuenta de Correo</span>
+                </button>
+            </div>
+
+            <!-- Tabla de Cuentas de Correo Estilo GitHub -->
+            <div class="bg-ghCard border border-ghBorder rounded-xl overflow-hidden shadow-lg">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-ghBg border-b border-ghBorder text-ghMuted uppercase font-mono">
+                        <tr>
+                            <th class="p-4">Correo</th>
+                            <th class="p-4">Proveedor</th>
+                            <th class="p-4">Servidor IMAP</th>
+                            <th class="p-4">Estado</th>
+                            <th class="p-4 text-right">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mailAccountsTableBody" class="divide-y divide-ghBorder">
+                        <!-- Filas cargadas por JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Modal Agregar Cuenta -->
+            <div id="addMailModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+                <div class="bg-ghCard border border-ghBorder rounded-xl p-6 w-full max-w-md shadow-2xl">
+                    <h3 class="text-base font-bold text-white mb-4">Agregar Cuenta de Correo</h3>
+                    <form id="addMailForm" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-medium text-ghMuted mb-1">Correo Electrónico</label>
+                            <input type="email" id="modalEmail" required placeholder="cuenta1@gmail.com" class="w-full bg-ghBg border border-ghBorder rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-ghBlue font-mono">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-ghMuted mb-1">Proveedor</label>
+                                <select id="modalProvider" class="w-full bg-ghBg border border-ghBorder rounded-lg px-3 py-2 text-xs text-white">
+                                    <option value="GMAIL">Gmail</option>
+                                    <option value="OUTLOOK">Outlook/Hotmail</option>
+                                    <option value="GENERIC_IMAP">IMAP Genérico</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-ghMuted mb-1">Tipo Auth</label>
+                                <select id="modalAuthType" class="w-full bg-ghBg border border-ghBorder rounded-lg px-3 py-2 text-xs text-white">
+                                    <option value="APP_PASSWORD">App Password</option>
+                                    <option value="BASIC_IMAP">Basic Auth</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-ghMuted mb-1">Contraseña o App Password (Cifrado AES-256)</label>
+                            <input type="password" id="modalPassword" required placeholder="••••••••••••••••" class="w-full bg-ghBg border border-ghBorder rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-ghBlue font-mono">
+                        </div>
+                        <div class="grid grid-cols-3 gap-3">
+                            <div class="col-span-2">
+                                <label class="block text-xs font-medium text-ghMuted mb-1">Servidor IMAP</label>
+                                <input type="text" id="modalImapServer" value="imap.gmail.com" class="w-full bg-ghBg border border-ghBorder rounded-lg px-3 py-2 text-xs text-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-ghMuted mb-1">Puerto</label>
+                                <input type="number" id="modalImapPort" value="993" class="w-full bg-ghBg border border-ghBorder rounded-lg px-3 py-2 text-xs text-white font-mono">
+                            </div>
+                        </div>
+                        <div class="flex justify-end space-x-3 pt-4 border-t border-ghBorder">
+                            <button type="button" id="btnCloseModal" class="px-4 py-2 bg-ghBg hover:bg-ghBorder text-xs text-white rounded-lg border border-ghBorder">Cancelar</button>
+                            <button type="submit" class="px-4 py-2 bg-ghGreen hover:bg-ghGreenHover text-xs text-white font-medium rounded-lg">Guardar y Cifrar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <footer class="border-t border-ghBorder py-4 text-center text-xs text-ghMuted">
+        Panel de Control &copy; 2026 API Correos | Puerto Local <span class="font-mono text-ghBlue">8990</span>
+    </footer>
+
+    <script src="/static/admin.js"></script>
+</body>
+</html>

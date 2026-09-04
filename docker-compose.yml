@@ -43,7 +43,8 @@ services:
     volumes:
       - ./apps/backend:/app
     ports:
-      - "8000:8000"
+      - "8990:8000"
+
     environment:
       - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres_password}@db:5432/${POSTGRES_DB:-api_correos_db}
       - REDIS_URL=redis://redis:6379/0
