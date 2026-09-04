@@ -7,9 +7,10 @@ from typing import List, Optional
 from database import get_db
 from models import User, UserRole, MailAccount, MailProvider, AuthType
 from schemas import (
-    AdminLoginPassRequest, Admin2FAVerifyRequest, TokenResponse, APIResponse,
+    AdminRegisterRequest, AdminLoginPassRequest, Admin2FAVerifyRequest, TokenResponse, APIResponse,
     MailAccountCreateRequest, MailAccountResponse, ClientUserResponse
 )
+
 from imap_service import IMAPService
 import redis_service
 import telegram_service
@@ -50,6 +51,38 @@ async def get_current_admin(
         )
     return admin
 
+@router.post("/auth/register", response_model=APIResponse)
+async def admin_register(body: AdminRegisterRequest, db: AsyncSession = Depends(get_db)):
+    """
+    Registra un nuevo Administrador con su Telegram Chat ID, Username y Contraseña.
+    """
+    stmt = select(User).where(
+        (User.username == body.username) | (User.telegram_chat_id == body.telegram_chat_id)
+    )
+    result = await db.execute(stmt)
+    existing_user = result.scalar_one_or_none()
+
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El nombre de usuario o el Telegram Chat ID ya está registrado."
+        )
+
+    admin_user = User(
+        telegram_chat_id=body.telegram_chat_id,
+        username=body.username,
+        hashed_password=security.get_password_hash(body.password),
+        role=UserRole.ADMIN,
+        is_active=True
+    )
+    db.add(admin_user)
+    await db.commit()
+
+    return APIResponse(
+        success=True,
+        message=f"Administrador '{body.username}' registrado exitosamente."
+    )
+
 @router.post("/auth/login-pass", response_model=APIResponse)
 async def admin_login_pass(body: AdminLoginPassRequest, db: AsyncSession = Depends(get_db)):
     """
@@ -60,18 +93,7 @@ async def admin_login_pass(body: AdminLoginPassRequest, db: AsyncSession = Depen
     result = await db.execute(stmt)
     admin = result.scalar_one_or_none()
 
-    # Si no existe ningún admin en la BD en entorno de dev, creamos el admin semilla por defecto
-    if not admin and body.username == "admin":
-        admin = User(
-            telegram_chat_id=123456789, # Chat ID temporal de dev
-            username="admin",
-            hashed_password=security.get_password_hash(body.password),
-            role=UserRole.ADMIN,
-            is_active=True
-        )
-        db.add(admin)
-        await db.commit()
-    elif not admin:
+    if not admin:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Credenciales de administrador inválidas."
@@ -82,6 +104,7 @@ async def admin_login_pass(body: AdminLoginPassRequest, db: AsyncSession = Depen
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Credenciales de administrador inválidas."
         )
+
 
     # Generar OTP de 2FA
     otp_code = await redis_service.generate_otp(admin.telegram_chat_id)

@@ -19,6 +19,38 @@ function initAdminApp() {
 }
 
 function setupAdminEventListeners() {
+    // Pestañas Iniciar Sesión / Registro
+    const tabLogin = document.getElementById('tabLogin');
+    const tabRegister = document.getElementById('tabRegister');
+    const passForm = document.getElementById('adminPassForm');
+    const regForm = document.getElementById('adminRegisterForm');
+
+    if (tabLogin && tabRegister) {
+        tabLogin.addEventListener('click', () => {
+            tabLogin.className = 'flex-1 py-2 text-center text-ghBlue border-b-2 border-ghBlue font-semibold';
+            tabRegister.className = 'flex-1 py-2 text-center text-ghMuted hover:text-white';
+            passForm.classList.remove('hidden');
+            regForm.classList.add('hidden');
+        });
+        tabRegister.addEventListener('click', () => {
+            tabRegister.className = 'flex-1 py-2 text-center text-ghBlue border-b-2 border-ghBlue font-semibold';
+            tabLogin.className = 'flex-1 py-2 text-center text-ghMuted hover:text-white';
+            regForm.classList.remove('hidden');
+            passForm.classList.add('hidden');
+        });
+    }
+
+    // Formulario Registro Admin
+    if (regForm) {
+        regForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const telegramId = document.getElementById('regTelegramId').value;
+            const username = document.getElementById('regUsername').value;
+            const password = document.getElementById('regPassword').value;
+            await registerAdmin(telegramId, username, password);
+        });
+    }
+
     // Paso 1: Usuario/Password
     document.getElementById('adminPassForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -26,6 +58,7 @@ function setupAdminEventListeners() {
         const pass = document.getElementById('adminPassword').value;
         await adminLoginPass(user, pass);
     });
+
 
     // Paso 2: 2FA Telegram Code
     document.getElementById('admin2FAForm').addEventListener('submit', async (e) => {
@@ -70,7 +103,40 @@ function showDashboard(username) {
     document.getElementById('adminUserSpan').innerText = `Admin: ${username}`;
 }
 
+async function registerAdmin(telegramChatId, username, password) {
+    const btn = document.getElementById('btnAdminRegister');
+    btn.disabled = true;
+    btn.innerText = 'Registrando...';
+
+    try {
+        const res = await fetch(`${API_BASE}/admin/auth/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                telegram_chat_id: parseInt(telegramChatId),
+                username: username,
+                password: password
+            })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+            showAdminAlert('adminAuthAlert', 'Administrador creado con éxito. Ahora puedes Iniciar Sesión.', 'success');
+            document.getElementById('tabLogin').click();
+            document.getElementById('adminUsername').value = username;
+        } else {
+            showAdminAlert('adminAuthAlert', data.detail || 'Error al registrar administrador.', 'error');
+        }
+    } catch (err) {
+        showAdminAlert('adminAuthAlert', 'Error de conexión con el servidor.', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerText = 'Crear Administrador';
+    }
+}
+
 async function adminLoginPass(username, password) {
+
     const btn = document.getElementById('btnAdminPass');
     btn.disabled = true;
     btn.innerText = 'Validando...';

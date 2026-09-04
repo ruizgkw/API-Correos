@@ -35,9 +35,15 @@ class ExtractionResponse(BaseModel):
     message: str
 
 # --- Esquemas Admin ---
+class AdminRegisterRequest(BaseModel):
+    telegram_chat_id: int = Field(..., description="Telegram Chat ID del Administrador", example=123456789)
+    username: str = Field(..., min_length=4, example="admin")
+    password: str = Field(..., min_length=6, example="AdminPass123!")
+
 class AdminLoginPassRequest(BaseModel):
     username: str = Field(..., example="admin")
     password: str = Field(..., example="AdminPass123!")
+
 
 class Admin2FAVerifyRequest(BaseModel):
     username: str = Field(..., example="admin")

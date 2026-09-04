@@ -52,11 +52,16 @@
                 <p class="text-xs text-ghMuted mt-1">Requiere credenciales y verificación 2FA por Telegram.</p>
             </div>
 
-            <!-- Paso 1: Usuario y Password -->
+            <div class="flex border-b border-ghBorder mb-4 text-xs font-medium">
+                <button id="tabLogin" class="flex-1 py-2 text-center text-ghBlue border-b-2 border-ghBlue font-semibold">Iniciar Sesión</button>
+                <button id="tabRegister" class="flex-1 py-2 text-center text-ghMuted hover:text-white">Registrar Admin</button>
+            </div>
+
+            <!-- Paso 1: Usuario y Password (Login) -->
             <form id="adminPassForm" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-medium text-ghMuted mb-1">Usuario</label>
-                    <input type="text" id="adminUsername" required value="admin" class="w-full bg-ghBg border border-ghBorder rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-ghBlue">
+                    <label class="block text-xs font-medium text-ghMuted mb-1">Usuario Administrador</label>
+                    <input type="text" id="adminUsername" required placeholder="admin" class="w-full bg-ghBg border border-ghBorder rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-ghBlue">
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-ghMuted mb-1">Contraseña</label>
@@ -66,6 +71,26 @@
                     Validar Contraseña
                 </button>
             </form>
+
+            <!-- Formulario de Registro de Administrador -->
+            <form id="adminRegisterForm" class="space-y-4 hidden">
+                <div>
+                    <label class="block text-xs font-medium text-ghMuted mb-1">Tu Telegram Chat ID (para 2FA)</label>
+                    <input type="number" id="regTelegramId" required placeholder="Ej. 123456789" class="w-full bg-ghBg border border-ghBorder rounded-lg px-4 py-2 text-sm text-white font-mono focus:outline-none focus:border-ghBlue">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-ghMuted mb-1">Nuevo Usuario Admin</label>
+                    <input type="text" id="regUsername" required placeholder="admin" class="w-full bg-ghBg border border-ghBorder rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-ghBlue">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-ghMuted mb-1">Contraseña Maestra</label>
+                    <input type="password" id="regPassword" required placeholder="••••••••" class="w-full bg-ghBg border border-ghBorder rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-ghBlue">
+                </div>
+                <button type="submit" id="btnAdminRegister" class="w-full bg-ghBlue hover:bg-blue-600 text-white font-medium py-2.5 rounded-lg text-sm transition">
+                    Crear Administrador
+                </button>
+            </form>
+
 
             <!-- Paso 2: 2FA Telegram Code -->
             <form id="admin2FAForm" class="space-y-4 hidden mt-4">
