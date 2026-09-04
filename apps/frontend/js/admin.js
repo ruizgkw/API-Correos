@@ -83,11 +83,12 @@ function setupAdminEventListeners() {
         document.getElementById('addMailModal').classList.add('hidden');
     });
 
-    // Form Guardar Cuenta
+    // Form Guardar Cuenta (Crear o Editar)
     document.getElementById('addMailForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        await createMailAccount();
+        await createOrUpdateMailAccount();
     });
+
 }
 
 function showAdminAuth() {
@@ -211,14 +212,17 @@ async function loadMailAccounts() {
 
         accounts.forEach(acc => {
             const tr = document.createElement('tr');
-            tr.className = 'hover:bg-ghBg/50 transition';
+            tr.className = 'hover:bg-brandBg/50 transition';
             tr.innerHTML = `
                 <td class="p-4 font-mono font-semibold text-white">${acc.email}</td>
-                <td class="p-4"><span class="px-2 py-0.5 rounded bg-ghBg border border-ghBorder text-xs text-ghBlue font-mono">${acc.provider}</span></td>
-                <td class="p-4 font-mono text-ghMuted">${acc.imap_server}:${acc.imap_port}</td>
-                <td class="p-4"><span class="px-2 py-0.5 rounded-full text-xs bg-green-950 text-green-400 border border-green-800/50">Activa</span></td>
-                <td class="p-4 text-right">
-                    <button onclick="testConnection('${acc.id}', this)" class="px-3 py-1.5 bg-ghBg hover:bg-ghBorder text-ghBlue text-xs rounded border border-ghBorder transition">
+                <td class="p-4"><span class="px-2.5 py-1 rounded-full bg-indigo-950 border border-indigo-800/50 text-xs text-brandAccent font-mono">${acc.provider}</span></td>
+                <td class="p-4 font-mono text-brandMuted">${acc.imap_server}:${acc.imap_port}</td>
+                <td class="p-4"><span class="px-2.5 py-0.5 rounded-full text-xs bg-green-950 text-green-400 border border-green-800/50">Activa</span></td>
+                <td class="p-4 text-right space-x-2">
+                    <button onclick="openEditModal('${acc.id}', '${acc.email}', '${acc.provider}', '${acc.auth_type}', '${acc.imap_server}', ${acc.imap_port})" class="px-3 py-1.5 bg-brandBg hover:bg-brandBorder text-brandAccent text-xs rounded-xl border border-brandBorder transition">
+                        ✏️ Editar
+                    </button>
+                    <button onclick="testConnection('${acc.id}', this)" class="px-3 py-1.5 bg-brandBg hover:bg-brandBorder text-brandAccent text-xs rounded-xl border border-brandBorder transition">
                         ⚡ Probar IMAP
                     </button>
                 </td>
@@ -228,6 +232,22 @@ async function loadMailAccounts() {
     } catch (err) {
         tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-400">Error cargando cuentas.</td></tr>`;
     }
+}
+
+function openEditModal(id, email, provider, authType, imapServer, imapPort) {
+    document.getElementById('modalTitle').innerText = 'Editar Cuenta de Correo';
+    document.getElementById('modalAccountId').value = id;
+    document.getElementById('modalEmail').value = email;
+    document.getElementById('modalEmail').disabled = true; // Email no se cambia
+    document.getElementById('modalProvider').value = provider;
+    document.getElementById('modalAuthType').value = authType;
+    document.getElementById('modalPassword').value = '';
+    document.getElementById('modalPassword').placeholder = 'Dejar vacío si no deseas cambiar la clave';
+    document.getElementById('modalPassword').required = false;
+    document.getElementById('modalImapServer').value = imapServer;
+    document.getElementById('modalImapPort').value = imapPort;
+
+    document.getElementById('addMailModal').classList.remove('hidden');
 }
 
 async function testConnection(accountId, btnElement) {
@@ -244,10 +264,10 @@ async function testConnection(accountId, btnElement) {
         const data = await res.json();
 
         if (res.ok && data.success) {
-            btnElement.className = 'px-3 py-1.5 bg-green-950 text-green-400 text-xs rounded border border-green-800/50';
+            btnElement.className = 'px-3 py-1.5 bg-green-950 text-green-400 text-xs rounded-xl border border-green-800/50';
             btnElement.innerText = '✓ Login IMAP OK';
         } else {
-            btnElement.className = 'px-3 py-1.5 bg-red-950 text-red-400 text-xs rounded border border-red-800/50';
+            btnElement.className = 'px-3 py-1.5 bg-red-950 text-red-400 text-xs rounded-xl border border-red-800/50';
             btnElement.innerText = '✕ Error Login';
         }
     } catch (err) {
@@ -255,26 +275,49 @@ async function testConnection(accountId, btnElement) {
     } finally {
         setTimeout(() => {
             btnElement.disabled = false;
-            btnElement.className = 'px-3 py-1.5 bg-ghBg hover:bg-ghBorder text-ghBlue text-xs rounded border border-ghBorder transition';
+            btnElement.className = 'px-3 py-1.5 bg-brandBg hover:bg-brandBorder text-brandAccent text-xs rounded-xl border border-brandBorder transition';
             btnElement.innerText = origText;
         }, 3000);
     }
 }
 
-async function createMailAccount() {
+async function createOrUpdateMailAccount() {
     const token = localStorage.getItem('admin_access_token');
+    const accountId = document.getElementById('modalAccountId').value;
+
+    const email = document.getElementById('modalEmail').value;
+    const provider = document.getElementById('modalProvider').value;
+    const authType = document.getElementById('modalAuthType').value;
+    const pass = document.getElementById('modalPassword').value;
+    const imapServer = document.getElementById('modalImapServer').value;
+    const imapPort = parseInt(document.getElementById('modalImapPort').value);
+
+    let url = `${API_BASE}/admin/mail-accounts`;
+    let method = 'POST';
+
     const body = {
-        email: document.getElementById('modalEmail').value,
-        provider: document.getElementById('modalProvider').value,
-        auth_type: document.getElementById('modalAuthType').value,
-        password_or_token: document.getElementById('modalPassword').value,
-        imap_server: document.getElementById('modalImapServer').value,
-        imap_port: parseInt(document.getElementById('modalImapPort').value)
+        provider: provider,
+        auth_type: authType,
+        imap_server: imapServer,
+        imap_port: imapPort
     };
 
+    if (accountId) {
+        // Edición
+        url = `${API_BASE}/admin/mail-accounts/${accountId}`;
+        method = 'PUT';
+        if (pass) {
+            body.password_or_token = pass;
+        }
+    } else {
+        // Creación
+        body.email = email;
+        body.password_or_token = pass;
+    }
+
     try {
-        const res = await fetch(`${API_BASE}/admin/mail-accounts`, {
-            method: 'POST',
+        const res = await fetch(url, {
+            method: method,
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -285,6 +328,9 @@ async function createMailAccount() {
         if (res.ok) {
             document.getElementById('addMailModal').classList.add('hidden');
             document.getElementById('addMailForm').reset();
+            document.getElementById('modalAccountId').value = '';
+            document.getElementById('modalEmail').disabled = false;
+            document.getElementById('modalPassword').required = true;
             loadMailAccounts();
         } else {
             const errData = await res.json();
@@ -305,3 +351,4 @@ function showAdminAlert(elementId, msg, type) {
         el.classList.add('bg-green-950/50', 'text-green-400', 'border', 'border-green-800/50');
     }
 }
+

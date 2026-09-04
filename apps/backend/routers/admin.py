@@ -8,8 +8,9 @@ from database import get_db
 from models import User, UserRole, MailAccount, MailProvider, AuthType
 from schemas import (
     AdminRegisterRequest, AdminLoginPassRequest, Admin2FAVerifyRequest, TokenResponse, APIResponse,
-    MailAccountCreateRequest, MailAccountResponse, ClientUserResponse
+    MailAccountCreateRequest, MailAccountUpdateRequest, MailAccountResponse, ClientUserResponse
 )
+
 
 from imap_service import IMAPService
 import redis_service
@@ -246,6 +247,52 @@ async def create_mail_account(
         imap_port=mail_acc.imap_port,
         is_active=mail_acc.is_active
     )
+
+@router.put("/mail-accounts/{account_id}", response_model=MailAccountResponse)
+async def update_mail_account(
+    account_id: str,
+    body: MailAccountUpdateRequest,
+    admin: User = Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db)
+):
+    """Actualiza la contraseña, servidor o estado de una cuenta de correo."""
+    import uuid
+    stmt = select(MailAccount).where(MailAccount.id == uuid.UUID(account_id))
+    result = await db.execute(stmt)
+    mail_acc = result.scalar_one_or_none()
+
+    if not mail_acc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Cuenta de correo no encontrada."
+        )
+
+    if body.password_or_token is not None:
+        mail_acc.encrypted_credentials = security.encrypt_data(body.password_or_token)
+    if body.provider is not None:
+        mail_acc.provider = MailProvider[body.provider]
+    if body.auth_type is not None:
+        mail_acc.auth_type = AuthType[body.auth_type]
+    if body.imap_server is not None:
+        mail_acc.imap_server = body.imap_server
+    if body.imap_port is not None:
+        mail_acc.imap_port = body.imap_port
+    if body.is_active is not None:
+        mail_acc.is_active = body.is_active
+
+    await db.commit()
+    await db.refresh(mail_acc)
+
+    return MailAccountResponse(
+        id=str(mail_acc.id),
+        email=mail_acc.email,
+        provider=mail_acc.provider.value,
+        auth_type=mail_acc.auth_type.value,
+        imap_server=mail_acc.imap_server,
+        imap_port=mail_acc.imap_port,
+        is_active=mail_acc.is_active
+    )
+
 
 @router.post("/mail-accounts/{account_id}/test-connection", response_model=APIResponse)
 async def test_mail_account_connection(

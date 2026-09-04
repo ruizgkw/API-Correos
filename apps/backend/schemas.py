@@ -57,6 +57,15 @@ class MailAccountCreateRequest(BaseModel):
     imap_server: Optional[str] = Field("imap.gmail.com", example="imap.gmail.com")
     imap_port: Optional[int] = Field(993, example=993)
 
+class MailAccountUpdateRequest(BaseModel):
+    password_or_token: Optional[str] = Field(None, example="nueva-app-password")
+    provider: Optional[str] = Field(None, example="GMAIL")
+    auth_type: Optional[str] = Field(None, example="APP_PASSWORD")
+    imap_server: Optional[str] = Field(None, example="imap.gmail.com")
+    imap_port: Optional[int] = Field(None, example=993)
+    is_active: Optional[bool] = Field(None, example=True)
+
+
 class MailAccountResponse(BaseModel):
     id: str
     email: str

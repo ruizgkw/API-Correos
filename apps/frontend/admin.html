@@ -141,11 +141,12 @@
                 </table>
             </div>
 
-            <!-- Modal Agregar Cuenta -->
+            <!-- Modal Agregar / Editar Cuenta -->
             <div id="addMailModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
                 <div class="bg-brandCard border border-brandBorder rounded-2xl p-6 w-full max-w-md shadow-2xl">
-                    <h3 class="text-base font-bold text-white mb-4">Agregar Cuenta de Correo</h3>
+                    <h3 id="modalTitle" class="text-base font-bold text-white mb-4">Agregar Cuenta de Correo</h3>
                     <form id="addMailForm" class="space-y-4">
+                        <input type="hidden" id="modalAccountId" value="">
                         <div>
                             <label class="block text-xs font-medium text-brandMuted mb-1">Correo Electrónico</label>
                             <input type="email" id="modalEmail" required placeholder="cuenta1@gmail.com" class="w-full bg-brandBg border border-brandBorder rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-brandPrimary font-mono">
@@ -163,6 +164,7 @@
                                 <label class="block text-xs font-medium text-brandMuted mb-1">Tipo Auth</label>
                                 <select id="modalAuthType" class="w-full bg-brandBg border border-brandBorder rounded-xl px-3 py-2.5 text-xs text-white">
                                     <option value="APP_PASSWORD">App Password</option>
+
                                     <option value="BASIC_IMAP">Basic Auth</option>
                                 </select>
                             </div>
