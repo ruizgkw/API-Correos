@@ -1,0 +1,67 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+
+# Environment variables & secrets (NUNCA subir a GitHub)
+.env
+*.env
+!.env.example
+
+# Database & Storage
+*.sqlite
+*.sqlite3
+*.db
+postgres_data/
+redis_data/
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Internal Agent Context & Rules (NUNCA subir a GitHub público)
+brain.md
+roadmap.md
+Agente_API.md
+
+
+# Logs
+*.log
+
