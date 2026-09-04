@@ -54,20 +54,44 @@ async def get_current_admin(
 @router.post("/auth/register", response_model=APIResponse)
 async def admin_register(body: AdminRegisterRequest, db: AsyncSession = Depends(get_db)):
     """
-    Registra un nuevo Administrador con su Telegram Chat ID, Username y Contraseña.
+    Registra un nuevo Administrador. Si el Telegram Chat ID ya existía como cliente regular,
+    lo promueve a rol de Administrador asignándole su usuario y contraseña.
     """
-    stmt = select(User).where(
-        (User.username == body.username) | (User.telegram_chat_id == body.telegram_chat_id)
-    )
-    result = await db.execute(stmt)
-    existing_user = result.scalar_one_or_none()
-
-    if existing_user:
+    # 1. Validar que el username no esté en uso por otro admin
+    username_stmt = select(User).where(User.username == body.username)
+    username_res = await db.execute(username_stmt)
+    if username_res.scalar_one_or_none():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="El nombre de usuario o el Telegram Chat ID ya está registrado."
+            detail="El nombre de usuario especificado ya está registrado."
         )
 
+    # 2. Buscar si el Telegram Chat ID ya existía en la base de datos
+    chat_stmt = select(User).where(User.telegram_chat_id == body.telegram_chat_id)
+    chat_res = await db.execute(chat_stmt)
+    existing_user = chat_res.scalar_one_or_none()
+
+    if existing_user:
+        # Si ya era admin con otro username
+        if existing_user.role == UserRole.ADMIN and existing_user.username:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Este Telegram Chat ID ya está registrado como administrador ('{existing_user.username}')."
+            )
+        
+        # Ascender de cliente a Administrador
+        existing_user.username = body.username
+        existing_user.hashed_password = security.get_password_hash(body.password)
+        existing_user.role = UserRole.ADMIN
+        existing_user.is_active = True
+        await db.commit()
+
+        return APIResponse(
+            success=True,
+            message=f"Cuenta vinculada y promovida a Administrador ('{body.username}') exitosamente."
+        )
+
+    # 3. Si no existía, crear el nuevo Administrador desde cero
     admin_user = User(
         telegram_chat_id=body.telegram_chat_id,
         username=body.username,
@@ -82,6 +106,7 @@ async def admin_register(body: AdminRegisterRequest, db: AsyncSession = Depends(
         success=True,
         message=f"Administrador '{body.username}' registrado exitosamente."
     )
+
 
 @router.post("/auth/login-pass", response_model=APIResponse)
 async def admin_login_pass(body: AdminLoginPassRequest, db: AsyncSession = Depends(get_db)):
