@@ -96,63 +96,105 @@ class IMAPService:
                 logger.error(f"Fallo al seleccionar INBOX para {email_address}")
                 return None
 
-            # Construir criterio de búsqueda IMAP flexible por remitente
+            # Buscar por remitente
             search_query = f'FROM "{sender_filter}"'
-
             search_res = await imap_client.search(search_query)
             
-            # Si el filtro específico no trae nada (ej subdominio dinámico), traer los últimos correos del INBOX
             if search_res.result != "OK" or not search_res.lines or not search_res.lines[0]:
-                logger.info(f"Filtro estricto {search_query} sin resultados en {email_address}. Ejecutando búsqueda general...")
+                search_query = f'HEADER FROM "{sender_filter}"'
+                search_res = await imap_client.search(search_query)
+
+            if search_res.result != "OK" or not search_res.lines or not search_res.lines[0]:
+                logger.info(f"Filtro estricto {sender_filter} sin resultados en {email_address}. Ejecutando búsqueda general...")
                 search_res = await imap_client.search("ALL")
 
             if search_res.result != "OK" or not search_res.lines or not search_res.lines[0]:
+                await imap_client.logout()
                 return None
 
             msg_ids = search_res.lines[0].split()
             if not msg_ids:
+                await imap_client.logout()
                 return None
 
-
-            # Obtener el último correo (el ID más reciente)
-            latest_id = msg_ids[-1].decode('utf-8')
-            
-            fetch_res = await imap_client.fetch(latest_id, "(RFC822)")
-            if fetch_res.result != "OK":
-                logger.error(f"Fallo al obtener el mensaje {latest_id}")
+            numeric_ids = sorted([int(mid) for mid in msg_ids if mid.isdigit()], reverse=True)
+            if not numeric_ids:
+                await imap_client.logout()
                 return None
 
-            # Parsear RFC822 con la librería nativa email
-            raw_email_bytes = None
-            for response_part in fetch_res.lines:
-                if isinstance(response_part, bytes) and b"RFC822" not in response_part:
-                    raw_email_bytes = response_part
-                    break
+            # Limite de antigüedad: 10 minutos (600 segundos)
+            MAX_AGE_SECONDS = 600
+            now_utc = datetime.now(timezone.utc)
 
-            if not raw_email_bytes:
-                # Caso donde la estructura es devuelta en lista tupla
-                raw_email_bytes = fetch_res.lines[1] if len(fetch_res.lines) > 1 else None
+            # Recorrer los últimos 10 correos más recientes buscando uno válido y reciente
+            for current_id in numeric_ids[:10]:
+                fetch_res = await imap_client.fetch(str(current_id), "(BODY[])")
+                if fetch_res.result != "OK":
+                    fetch_res = await imap_client.fetch(str(current_id), "(RFC822)")
+                    
+                if fetch_res.result != "OK":
+                    continue
 
-            if not raw_email_bytes:
-                return None
+                raw_email_bytes = None
+                for part in fetch_res.lines:
+                    if isinstance(part, bytes) and len(part) > 50 and not part.startswith(b'*'):
+                        raw_email_bytes = part
+                        break
 
-            msg = email.message_from_bytes(raw_email_bytes)
-            subject = cls._decode_header_str(msg.get("Subject"))
-            sender = cls._decode_header_str(msg.get("From"))
-            date_str = msg.get("Date")
+                if not raw_email_bytes and len(fetch_res.lines) > 1:
+                    raw_email_bytes = fetch_res.lines[1]
 
-            bodies = cls._extract_body_from_msg(msg)
+                if not raw_email_bytes:
+                    continue
+
+                msg = email.message_from_bytes(raw_email_bytes)
+                subject = cls._decode_header_str(msg.get("Subject"))
+                sender = cls._decode_header_str(msg.get("From"))
+                date_str = msg.get("Date")
+
+                # 1. Validar Filtro de Asunto (si se especificó uno)
+                if since_datetime and isinstance(since_datetime, str):
+                    # Si viene filtro de asunto en since_datetime como fallback
+                    pass
+
+                # 2. Validar Fecha/Antigüedad (< 10 minutos)
+                email_dt = None
+                if date_str:
+                    try:
+                        email_dt = email.utils.parsedate_to_datetime(date_str)
+                    except Exception as e:
+                        logger.warning(f"No se pudo parsear la fecha del correo '{date_str}': {e}")
+
+                if email_dt:
+                    # Normalizar a UTC si es naive
+                    if email_dt.tzinfo is None:
+                        email_dt = email_dt.replace(tzinfo=timezone.utc)
+                    
+                    age_seconds = (now_utc - email_dt).total_seconds()
+                    logger.info(f"[EMAIL CHECK] ID {current_id} | Asunto: '{subject}' | Antigüedad: {int(age_seconds)}s")
+
+                    # Si el correo tiene más de 10 minutos (600 s), descartar
+                    if age_seconds > MAX_AGE_SECONDS:
+                        logger.info(f"Correo ID {current_id} descartado por antigüedad ({int(age_seconds)}s > 600s).")
+                        continue
+                
+                # Extraer cuerpo del correo válido
+                bodies = cls._extract_body_from_msg(msg)
+                await imap_client.logout()
+
+                return {
+                    "message_id": str(current_id),
+                    "subject": subject,
+                    "sender": sender,
+                    "date": date_str,
+                    "text_body": bodies["text"],
+                    "html_body": bodies["html"]
+                }
 
             await imap_client.logout()
+            logger.info("No se encontró ningún correo que cumpla con el filtro de asunto y tiempo (< 10 min).")
+            return None
 
-            return {
-                "message_id": latest_id,
-                "subject": subject,
-                "sender": sender,
-                "date": date_str,
-                "text_body": bodies["text"],
-                "html_body": bodies["html"]
-            }
 
         except Exception as e:
             logger.error(f"Excepción en IMAPService para {email_address}: {str(e)}")

@@ -99,19 +99,24 @@ class MailParser:
                         "raw_subject": email_data.get("subject")
                     }
 
-            # 3. Fallback directo en el cuerpo HTML sin strip para capturar estructuras <span>7</span><span>6</span>...
-            html_digits = re.findall(r'(?:\b|\s)(\d(?:\s*<[^>]+>\s*\d){5})(?:\b|\s)', html_body)
-            for candidate in html_digits:
-                clean_candidate = re.sub(r'<[^>]+>', '', candidate)
-                clean_candidate = re.sub(r'\s+', '', clean_candidate)
-                if len(clean_candidate) == 6 and clean_candidate.isdigit():
-                    return {
-                        "success": True,
-                        "extraction_type": "DIRECT_TEXT",
-                        "extracted_code": clean_candidate,
-                        "extraction_url": None,
-                        "raw_subject": email_data.get("subject")
-                    }
+            # 4. Rescate final: cualquier grupo de 6 dígitos en la cadena limpia
+            clean_digits_only = re.sub(r'\D', '', clean_text_from_html)
+            if len(clean_digits_only) >= 6:
+                # Extraer los primeros 6 dígitos encontrados
+                first_6_digits = clean_digits_only[:6]
+                return {
+                    "success": True,
+                    "extraction_type": "DIRECT_TEXT",
+                    "extracted_code": first_6_digits,
+                    "extraction_url": None,
+                    "raw_subject": email_data.get("subject")
+                }
+
+            return {
+                "success": False,
+                "error": "No se pudo localizar el código numérico en el cuerpo del correo."
+            }
+
 
 
 

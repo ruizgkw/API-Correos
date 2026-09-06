@@ -3,6 +3,9 @@ from contextlib import asynccontextmanager
 from database import init_db
 from routers import auth, extraction, admin
 
+import logging
+logging.basicConfig(level=logging.INFO)
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Inicializar las tablas de la BD al arrancar
