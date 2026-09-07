@@ -343,7 +343,7 @@ async def oauth_authorize(provider: str):
         client_id = os.getenv("MICROSOFT_CLIENT_ID", "")
         if not client_id:
             raise HTTPException(status_code=400, detail="MICROSOFT_CLIENT_ID no configurado en el archivo .env")
-        scope = "https://outlook.office.com/IMAP.AccessAsUser.All User.Read offline_access openid profile email"
+        scope = "https://outlook.office.com/IMAP.AccessAsUser.All offline_access openid profile email"
         auth_url = (
             f"https://login.microsoftonline.com/common/oauth2/v2.0/authorize?"
             f"client_id={client_id}&response_type=code&redirect_uri={redirect_uri}&"
@@ -389,7 +389,7 @@ async def oauth_callback(
             "code": code,
             "redirect_uri": redirect_uri,
             "grant_type": "authorization_code",
-            "scope": "https://outlook.office.com/IMAP.AccessAsUser.All User.Read offline_access openid profile email"
+            "scope": "https://outlook.office.com/IMAP.AccessAsUser.All offline_access openid profile email"
         }
         async with httpx.AsyncClient() as client:
             res = await client.post(token_url, data=payload)
