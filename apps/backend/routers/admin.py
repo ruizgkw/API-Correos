@@ -388,7 +388,8 @@ async def oauth_callback(
             "client_secret": client_secret,
             "code": code,
             "redirect_uri": redirect_uri,
-            "grant_type": "authorization_code"
+            "grant_type": "authorization_code",
+            "scope": "https://outlook.office.com/IMAP.AccessAsUser.All User.Read offline_access openid profile email"
         }
         async with httpx.AsyncClient() as client:
             res = await client.post(token_url, data=payload)
