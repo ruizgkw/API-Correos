@@ -1,3 +1,4 @@
+import os
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -342,7 +343,7 @@ async def oauth_authorize(provider: str):
         client_id = os.getenv("MICROSOFT_CLIENT_ID", "")
         if not client_id:
             raise HTTPException(status_code=400, detail="MICROSOFT_CLIENT_ID no configurado en el archivo .env")
-        scope = "https://outlook.office.com/IMAP.AccessAsUser.All offline_access"
+        scope = "https://outlook.office.com/IMAP.AccessAsUser.All User.Read offline_access openid profile email"
         auth_url = (
             f"https://login.microsoftonline.com/common/oauth2/v2.0/authorize?"
             f"client_id={client_id}&response_type=code&redirect_uri={redirect_uri}&"
@@ -352,7 +353,7 @@ async def oauth_authorize(provider: str):
         client_id = os.getenv("GOOGLE_CLIENT_ID", "")
         if not client_id:
             raise HTTPException(status_code=400, detail="GOOGLE_CLIENT_ID no configurado en el archivo .env")
-        scope = "https://mail.google.com/"
+        scope = "https://mail.google.com/ https://www.googleapis.com/auth/userinfo.email"
         auth_url = (
             f"https://accounts.google.com/o/oauth2/v2/auth?"
             f"client_id={client_id}&response_type=code&redirect_uri={redirect_uri}&"
@@ -396,15 +397,31 @@ async def oauth_callback(
             token_data = res.json()
             refresh_token = token_data.get("refresh_token")
             access_token = token_data.get("access_token")
+            id_token = token_data.get("id_token")
 
-            # Obtener el email del usuario usando la API de Microsoft Graph
-            me_res = await client.get(
-                "https://graph.microsoft.com/v1.0/me",
-                headers={"Authorization": f"Bearer {access_token}"}
-            )
-            if me_res.status_code == 200:
-                me_data = me_res.json()
-                email_address = me_data.get("userPrincipalName") or me_data.get("mail")
+            # Decodificar email desde id_token si viene presente
+            if id_token:
+                try:
+                    import base64
+                    import json
+                    payload_part = id_token.split('.')[1]
+                    # Ajustar padding base64
+                    payload_part += '=' * (-len(payload_part) % 4)
+                    decoded_bytes = base64.b64decode(payload_part)
+                    id_payload = json.loads(decoded_bytes)
+                    email_address = id_payload.get("preferred_username") or id_payload.get("email") or id_payload.get("upn")
+                except Exception as e:
+                    print(f"Error decodificando id_token: {e}")
+
+            # Si no viene en el id_token, consultar Microsoft Graph API
+            if not email_address and access_token:
+                me_res = await client.get(
+                    "https://graph.microsoft.com/v1.0/me",
+                    headers={"Authorization": f"Bearer {access_token}"}
+                )
+                if me_res.status_code == 200:
+                    me_data = me_res.json()
+                    email_address = me_data.get("userPrincipalName") or me_data.get("mail")
 
     elif provider_name in ["GOOGLE", "GMAIL"]:
         client_id = os.getenv("GOOGLE_CLIENT_ID", "")
