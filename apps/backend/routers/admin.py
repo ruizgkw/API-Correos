@@ -318,7 +318,10 @@ async def test_mail_account_connection(
         imap_port=mail_acc.imap_port or 993,
         email_address=mail_acc.email,
         encrypted_credentials=mail_acc.encrypted_credentials,
-        sender_filter="noreply@test.com"
+        sender_filter="noreply@test.com",
+        auth_type=mail_acc.auth_type.value,
+        encrypted_refresh_token=mail_acc.encrypted_refresh_token,
+        provider=mail_acc.provider.value
     )
 
     # Si no trajo correo pero la autenticación fue exitosa (no retornó None por error de login)
@@ -326,6 +329,154 @@ async def test_mail_account_connection(
         success=True,
         message=f"Conexión e inicio de sesión IMAP exitosos para {mail_acc.email}."
     )
+
+# --- Endpoints de Autenticación OAuth2 (Google & Microsoft) ---
+
+@router.get("/oauth/authorize")
+async def oauth_authorize(provider: str):
+    """Genera la URL oficial de autorización de Google o Microsoft."""
+    provider_upper = provider.upper()
+    redirect_uri = os.getenv("OAUTH_REDIRECT_URI", "http://localhost:8990/api/v1/admin/oauth/callback")
+
+    if provider_upper == "MICROSOFT" or provider_upper == "OUTLOOK":
+        client_id = os.getenv("MICROSOFT_CLIENT_ID", "")
+        if not client_id:
+            raise HTTPException(status_code=400, detail="MICROSOFT_CLIENT_ID no configurado en el archivo .env")
+        scope = "https://outlook.office.com/IMAP.AccessAsUser.All offline_access"
+        auth_url = (
+            f"https://login.microsoftonline.com/common/oauth2/v2.0/authorize?"
+            f"client_id={client_id}&response_type=code&redirect_uri={redirect_uri}&"
+            f"response_mode=query&scope={scope}&state=MICROSOFT"
+        )
+    elif provider_upper == "GOOGLE" or provider_upper == "GMAIL":
+        client_id = os.getenv("GOOGLE_CLIENT_ID", "")
+        if not client_id:
+            raise HTTPException(status_code=400, detail="GOOGLE_CLIENT_ID no configurado en el archivo .env")
+        scope = "https://mail.google.com/"
+        auth_url = (
+            f"https://accounts.google.com/o/oauth2/v2/auth?"
+            f"client_id={client_id}&response_type=code&redirect_uri={redirect_uri}&"
+            f"scope={scope}&access_type=offline&prompt=consent&state=GOOGLE"
+        )
+    else:
+        raise HTTPException(status_code=400, detail="Proveedor OAuth2 no soportado.")
+
+    return {"auth_url": auth_url}
+
+@router.get("/oauth/callback")
+async def oauth_callback(
+    code: str,
+    state: str = "MICROSOFT",
+    db: AsyncSession = Depends(get_db)
+):
+    """Recibe el código de autorización de Google/Microsoft, intercambia el Refresh Token y guarda o actualiza la cuenta."""
+    import httpx
+    redirect_uri = os.getenv("OAUTH_REDIRECT_URI", "http://localhost:8990/api/v1/admin/oauth/callback")
+    provider_name = state.upper()
+
+    refresh_token = None
+    email_address = None
+    imap_server = "outlook.office365.com" if provider_name in ["MICROSOFT", "OUTLOOK"] else "imap.gmail.com"
+
+    if provider_name in ["MICROSOFT", "OUTLOOK"]:
+        client_id = os.getenv("MICROSOFT_CLIENT_ID", "")
+        client_secret = os.getenv("MICROSOFT_CLIENT_SECRET", "")
+        token_url = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
+        payload = {
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "code": code,
+            "redirect_uri": redirect_uri,
+            "grant_type": "authorization_code"
+        }
+        async with httpx.AsyncClient() as client:
+            res = await client.post(token_url, data=payload)
+            if res.status_code != 200:
+                raise HTTPException(status_code=400, detail=f"Error al obtener token de Microsoft: {res.text}")
+            token_data = res.json()
+            refresh_token = token_data.get("refresh_token")
+            access_token = token_data.get("access_token")
+
+            # Obtener el email del usuario usando la API de Microsoft Graph
+            me_res = await client.get(
+                "https://graph.microsoft.com/v1.0/me",
+                headers={"Authorization": f"Bearer {access_token}"}
+            )
+            if me_res.status_code == 200:
+                me_data = me_res.json()
+                email_address = me_data.get("userPrincipalName") or me_data.get("mail")
+
+    elif provider_name in ["GOOGLE", "GMAIL"]:
+        client_id = os.getenv("GOOGLE_CLIENT_ID", "")
+        client_secret = os.getenv("GOOGLE_CLIENT_SECRET", "")
+        token_url = "https://oauth2.googleapis.com/token"
+        payload = {
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "code": code,
+            "redirect_uri": redirect_uri,
+            "grant_type": "authorization_code"
+        }
+        async with httpx.AsyncClient() as client:
+            res = await client.post(token_url, data=payload)
+            if res.status_code != 200:
+                raise HTTPException(status_code=400, detail=f"Error al obtener token de Google: {res.text}")
+            token_data = res.json()
+            refresh_token = token_data.get("refresh_token")
+            access_token = token_data.get("access_token")
+
+            # Obtener email de Google UserInfo
+            userinfo_res = await client.get(
+                "https://www.googleapis.com/oauth2/v2/userinfo",
+                headers={"Authorization": f"Bearer {access_token}"}
+            )
+            if userinfo_res.status_code == 200:
+                email_address = userinfo_res.json().get("email")
+
+    if not refresh_token or not email_address:
+        raise HTTPException(status_code=400, detail="No se pudo obtener el Refresh Token o el email del proveedor.")
+
+    # Guardar o actualizar la cuenta en la Base de Datos
+    stmt = select(MailAccount).where(MailAccount.email == email_address.lower())
+    result = await db.execute(stmt)
+    mail_acc = result.scalar_one_or_none()
+
+    encrypted_rt = security.encrypt_data(refresh_token)
+    provider_enum = MailProvider.OUTLOOK if provider_name in ["MICROSOFT", "OUTLOOK"] else MailProvider.GMAIL
+
+    if mail_acc:
+        mail_acc.auth_type = AuthType.OAUTH2
+        mail_acc.provider = provider_enum
+        mail_acc.encrypted_refresh_token = encrypted_rt
+        mail_acc.imap_server = imap_server
+        mail_acc.is_active = True
+    else:
+        mail_acc = MailAccount(
+            email=email_address.lower(),
+            provider=provider_enum,
+            auth_type=AuthType.OAUTH2,
+            encrypted_refresh_token=encrypted_rt,
+            imap_server=imap_server,
+            imap_port=993,
+            is_active=True
+        )
+        db.add(mail_acc)
+
+    await db.commit()
+
+    from fastapi.responses import HTMLResponse
+    return HTMLResponse(content=f"""
+        <html>
+            <head><title>Autorización OAuth2 Exitosa</title></head>
+            <body style="background-color: #0B0F19; color: white; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0;">
+                <div style="background: #111827; border: 1px solid #1F2937; padding: 40px; border-radius: 16px; text-align: center; max-width: 400px;">
+                    <h2 style="color: #10B981; margin-top: 0;">✓ Cuenta Conectada Exitosamente</h2>
+                    <p style="color: #9CA3AF; font-size: 14px;">La cuenta <strong>{email_address}</strong> fue vinculada mediante OAuth2 y está lista para extraer códigos.</p>
+                    <button onclick="window.close()" style="background: #6366F1; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 20px;">Cerrar Ventana</button>
+                </div>
+            </body>
+        </html>
+    """)
 
 # --- Endpoints de Gestión de Clientes ---
 

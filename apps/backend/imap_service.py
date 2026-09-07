@@ -69,26 +69,51 @@ class IMAPService:
         email_address: str,
         encrypted_credentials: str,
         sender_filter: str,
-        since_datetime: Optional[datetime] = None
+        since_datetime: Optional[datetime] = None,
+        auth_type: str = "APP_PASSWORD",
+        encrypted_refresh_token: Optional[str] = None,
+        provider: str = "GENERIC_IMAP"
     ) -> Optional[Dict[str, Any]]:
         """
-        Se conecta de forma asíncrona vía IMAP SSL, descifra credenciales en memoria,
-        busca el correo más reciente recibido desde `sender_filter` posterior a `since_datetime`
-        y devuelve el cuerpo del correo.
+        Se conecta de forma asíncrona vía IMAP SSL descifrando credenciales o refrescando el token OAuth2 XOAUTH2.
         """
-        # Descifrar contraseña en memoria transitoria
-        raw_password = security.decrypt_data(encrypted_credentials)
-        if not raw_password:
-            logger.error(f"No se pudieron descifrar las credenciales para {email_address}")
-            return None
+        access_token = None
+        raw_password = None
+
+        if auth_type == "OAUTH2" or (encrypted_refresh_token and not encrypted_credentials):
+            refresh_token = security.decrypt_data(encrypted_refresh_token)
+            if provider == "OUTLOOK" or "hotmail" in email_address.lower() or "outlook" in email_address.lower():
+                access_token = await security.refresh_microsoft_access_token(refresh_token)
+            else:
+                access_token = await security.refresh_google_access_token(refresh_token)
+
+            if not access_token:
+                logger.error(f"No se pudo obtener Access Token OAuth2 para {email_address}")
+                return None
+        else:
+            raw_password = security.decrypt_data(encrypted_credentials)
+            if not raw_password:
+                logger.error(f"No se pudieron descifrar las credenciales para {email_address}")
+                return None
 
         imap_client = aioimaplib.IMAP4_SSL(host=imap_server, port=imap_port)
         
         try:
             await imap_client.wait_hello_from_server()
-            login_res = await imap_client.login(email_address, raw_password)
+
+            if access_token:
+                # Construir trama SASL XOAUTH2: user=user@domain.com\x01auth=Bearer ACCESS_TOKEN\x01\x01
+                auth_string = f"user={email_address}\x01auth=Bearer {access_token}\x01\x01"
+                import base64
+                encoded_auth = base64.b64encode(auth_string.encode('utf-8')).decode('utf-8')
+                
+                # Ejecutar comando XOAUTH2 con aioimaplib
+                login_res = await imap_client.authenticate('XOAUTH2', lambda x: encoded_auth)
+            else:
+                login_res = await imap_client.login(email_address, raw_password)
+
             if login_res.result != "OK":
-                logger.error(f"Fallo de autenticación IMAP para {email_address}: {login_res}")
+                logger.error(f"Fallo de autenticación IMAP ({auth_type}) para {email_address}: {login_res}")
                 return None
 
             select_res = await imap_client.select("INBOX")

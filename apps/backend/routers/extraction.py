@@ -160,7 +160,10 @@ async def extract_code(
         email_address=mail_account.email,
         encrypted_credentials=mail_account.encrypted_credentials,
         sender_filter=platform.sender_email,
-        since_datetime=request_timestamp
+        since_datetime=request_timestamp,
+        auth_type=mail_account.auth_type.value,
+        encrypted_refresh_token=mail_account.encrypted_refresh_token,
+        provider=mail_account.provider.value
     )
 
     if not email_data:

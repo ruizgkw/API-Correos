@@ -68,3 +68,60 @@ def get_password_hash(password: str) -> str:
     return pwd_context.hash(password[:72])
 
 
+import httpx
+
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET", "")
+MICROSOFT_CLIENT_ID = os.getenv("MICROSOFT_CLIENT_ID", "")
+MICROSOFT_CLIENT_SECRET = os.getenv("MICROSOFT_CLIENT_SECRET", "")
+
+async def refresh_google_access_token(refresh_token: str) -> Optional[str]:
+    """Intercambia un Refresh Token de Google por un Access Token fresco."""
+    if not refresh_token:
+        return None
+    url = "https://oauth2.googleapis.com/token"
+    payload = {
+        "client_id": GOOGLE_CLIENT_ID,
+        "client_secret": GOOGLE_CLIENT_SECRET,
+        "refresh_token": refresh_token,
+        "grant_type": "refresh_token"
+    }
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            res = await client.post(url, data=payload)
+            if res.status_code == 200:
+                data = res.json()
+                return data.get("access_token")
+            else:
+                print(f"[OAuth2 Error] Google refresh token falló ({res.status_code}): {res.text}")
+                return None
+    except Exception as e:
+        print(f"[OAuth2 Exception] Error refrescando Google token: {e}")
+        return None
+
+async def refresh_microsoft_access_token(refresh_token: str) -> Optional[str]:
+    """Intercambia un Refresh Token de Microsoft por un Access Token fresco."""
+    if not refresh_token:
+        return None
+    url = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
+    payload = {
+        "client_id": MICROSOFT_CLIENT_ID,
+        "client_secret": MICROSOFT_CLIENT_SECRET,
+        "refresh_token": refresh_token,
+        "grant_type": "refresh_token",
+        "scope": "https://outlook.office.com/IMAP.AccessAsUser.All offline_access"
+    }
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            res = await client.post(url, data=payload)
+            if res.status_code == 200:
+                data = res.json()
+                return data.get("access_token")
+            else:
+                print(f"[OAuth2 Error] Microsoft refresh token falló ({res.status_code}): {res.text}")
+                return None
+    except Exception as e:
+        print(f"[OAuth2 Exception] Error refrescando Microsoft token: {e}")
+        return None
+
+

@@ -352,3 +352,33 @@ function showAdminAlert(elementId, msg, type) {
     }
 }
 
+async function connectOAuth(provider) {
+    try {
+        const res = await fetch(`${API_BASE}/admin/oauth/authorize?provider=${provider}`);
+        const data = await res.json();
+        if (res.ok && data.auth_url) {
+            // Abrir ventana modal de consentimiento oficial de Google/Microsoft
+            const width = 600, height = 700;
+            const left = (window.innerWidth - width) / 2;
+            const top = (window.innerHeight - height) / 2;
+            const popup = window.open(
+                data.auth_url,
+                `Conectar con ${provider}`,
+                `width=${width},height=${height},top=${top},left=${left}`
+            );
+
+            // Monitorear cuando se cierre el popup para recargar la tabla de cuentas
+            const timer = setInterval(() => {
+                if (popup.closed) {
+                    clearInterval(timer);
+                    loadMailAccounts();
+                }
+            }, 1000);
+        } else {
+            alert(data.detail || 'Error iniciando OAuth2.');
+        }
+    } catch (err) {
+        alert('Error al conectar con el servidor.');
+    }
+}
+
