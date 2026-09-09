@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EAcodigos - Portal de Acceso Cliente</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+    <!-- Tailwind CSS (Midnight Indigo Theme) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brandBg: '#0B0F19',
+                        brandCard: '#111827',
+                        brandBorder: '#1F2937',
+                        brandPrimary: '#6366F1',
+                        brandPrimaryHover: '#4F46E5',
+                        brandAccent: '#818CF8',
+                        brandText: '#F9FAFB',
+                        brandMuted: '#9CA3AF'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-brandBg text-brandText font-sans min-h-screen flex flex-col justify-between antialiased selection:bg-brandPrimary selection:text-white">
+
+    <!-- Header Midnight Style -->
+    <header class="px-6 py-4 flex justify-between items-center z-40 max-w-7xl mx-auto w-full">
+        <a href="/" class="flex items-center space-x-3 hover:opacity-90 transition">
+            <img src="/favicon.svg" alt="Logo" class="w-8 h-8">
+            <span class="font-bold text-xl text-white tracking-wide">EAcodigos <span class="text-xs bg-brandBorder px-2.5 py-0.5 rounded-full text-brandAccent font-mono">v1.0 VIP</span></span>
+        </a>
+        <div class="flex items-center space-x-4">
+            <div id="userBadge" class="hidden flex items-center space-x-3">
+                <span class="text-xs text-brandMuted font-mono" id="chatIdSpan"></span>
+                <button id="logoutBtn" class="text-xs text-rose-400 hover:underline font-medium">Cerrar Sesión</button>
+            </div>
+            <a href="/admin" class="text-xs bg-brandCard border border-brandBorder hover:bg-brandBorder text-brandAccent px-3.5 py-2 rounded-xl font-medium transition flex items-center space-x-1.5 shadow">
+                <span>🔐 Acceso Admin</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content (Layout Dividido Estilo Facebook) -->
+    <main class="flex-grow flex items-center justify-center p-4 md:p-8 max-w-7xl mx-auto w-full">
+
+        <!-- CONTENEDOR DIVIDIDO EN 2 COLUMNAS (Estilo Facebook) -->
+        <div id="splitLandingContainer" class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center w-full">
+            
+            <!-- COLUMNA IZQUIERDA: MENSAJE PRINCIPAL Y MOCKUPS FLOTANTES (7 / 12) -->
+            <div id="leftBrandColumn" class="lg:col-span-7 space-y-8 text-left">
+                <div class="space-y-4">
+                    <div class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-indigo-950/70 border border-indigo-800/50 text-xs text-brandAccent font-mono shadow-inner">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span>Plataforma Privada & Autónoma de Verificación</span>
+                    </div>
+                    <h1 class="text-4xl md:text-6xl font-extrabold text-white tracking-tight leading-none">
+                        Obtén el código <br>
+                        de tus cuentas <br>
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-brandPrimary via-brandAccent to-purple-400">fácilmente.</span>
+                    </h1>
+                    <p class="text-sm md:text-base text-brandMuted max-w-lg leading-relaxed">
+                        EAcodigos automatiza la entrega instantánea de códigos de verificación con seguridad SSL y conexiones avanzadas sin exposición de contraseñas.
+                    </p>
+                </div>
+
+                <!-- CARROUSEL / MOCKUP COMPACTO FLOTANTE -->
+                <div class="relative max-w-lg bg-brandCard border border-brandBorder rounded-2xl p-5 shadow-2xl space-y-3">
+                    <div class="flex items-center justify-between border-b border-brandBorder pb-2.5">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                            <span class="text-xs font-bold text-white font-mono">CONEXIÓN OAUTH2 ACTIVA</span>
+                        </div>
+                        <span class="text-[10px] bg-brandBg text-brandAccent px-2 py-0.5 rounded font-mono">100% Automático</span>
+                    </div>
+
+                    <!-- Fila Mockup de Entrega -->
+                    <div class="bg-brandBg border border-brandBorder rounded-xl p-3 flex justify-between items-center shadow-inner">
+                        <div>
+                            <span class="text-[10px] text-brandMuted block">Servicio Digital #1</span>
+                            <span class="text-2xl font-bold font-mono text-brandAccent tracking-widest">7 6 2 7 4 0</span>
+                        </div>
+                        <span class="text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800/50 px-2.5 py-1 rounded-lg font-mono">✓ Verificado</span>
+                    </div>
+
+                    <div class="flex justify-between items-center text-[11px] text-brandMuted pt-1">
+                        <span class="flex items-center space-x-1">
+                            <svg class="w-3.5 h-3.5 text-brandAccent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span>Entrega en &lt; 3 segundos</span>
+                        </span>
+                        <span class="text-amber-400 font-mono font-medium">⏳ Cooldown activo</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COLUMNA DERECHA: CAJA DE INICIO DE SESIÓN ESTILO FACEBOOK (5 / 12) -->
+            <div id="rightLoginColumn" class="lg:col-span-5 w-full max-w-md mx-auto lg:ml-auto">
+                
+                <!-- SECCIÓN DE AUTENTICACIÓN TELEGRAM (LOGIN FORM) -->
+                <div id="authSection" class="w-full bg-brandCard border border-brandBorder rounded-2xl p-8 shadow-2xl relative">
+                    <div class="text-center mb-6">
+                        <div class="inline-flex p-3 bg-brandBg border border-brandBorder rounded-2xl mb-3 shadow-inner">
+                            <img src="/favicon.svg" class="w-8 h-8">
+                        </div>
+                        <h2 class="text-xl font-bold text-white tracking-tight">Acceso a Clientes</h2>
+                        <p class="text-xs text-brandMuted mt-1">Ingresa tu Telegram Chat ID para recibir el OTP.</p>
+                    </div>
+
+                    <!-- Paso A: Solicitar OTP -->
+                    <form id="requestOtpForm" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-medium text-brandMuted mb-1">Telegram Chat ID Autorizado</label>
+                            <input type="number" id="inputChatId" required placeholder="Ej. 123456789" class="w-full bg-brandBg border border-brandBorder rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brandPrimary text-white font-mono transition">
+                        </div>
+                        <button type="submit" id="btnSendOtp" class="w-full bg-brandPrimary hover:bg-brandPrimaryHover text-white font-semibold py-3.5 rounded-xl text-sm transition duration-150 shadow-lg shadow-indigo-900/30 flex items-center justify-center">
+                            <span>Enviar Código a Telegram</span>
+                        </button>
+                    </form>
+
+                    <!-- Paso B: Verificar OTP (Oculto inicialmente) -->
+                    <form id="verifyOtpForm" class="space-y-4 hidden mt-4">
+                        <div class="p-3 bg-indigo-950/40 border border-indigo-800/50 rounded-xl text-xs text-brandAccent mb-2">
+                            Código enviado a Telegram. Expira en 5 minutos.
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-brandMuted mb-1">Código OTP (6 dígitos)</label>
+                            <input type="text" id="inputOtp" required maxlength="6" placeholder="123456" class="w-full bg-brandBg border border-brandBorder rounded-xl px-4 py-3 text-center text-xl tracking-widest font-mono text-white focus:outline-none focus:border-brandPrimary">
+                        </div>
+                        <button type="submit" id="btnVerifyOtp" class="w-full bg-brandAccent hover:bg-indigo-400 text-brandBg font-bold py-3 rounded-xl text-sm transition duration-150">
+                            Verificar e Ingresar
+                        </button>
+                    </form>
+                    
+                    <div id="authAlert" class="mt-4 hidden p-3.5 rounded-xl text-xs"></div>
+                </div>
+
+                <!-- SECCIÓN PRINCIPAL: CONSULTA DE CÓDIGOS (Reemplaza la caja de login al autenticar) -->
+                <div id="extractionSection" class="w-full bg-brandCard border border-brandBorder rounded-2xl p-8 shadow-2xl hidden">
+                    <div class="flex justify-between items-center border-b border-brandBorder pb-4 mb-6">
+                        <div>
+                            <h2 class="text-lg font-bold text-white">Extracción de Código</h2>
+                            <p class="text-xs text-brandMuted">Consulta tu código sin exponer tu correo.</p>
+                        </div>
+                        <span class="text-xs font-mono bg-emerald-950 text-emerald-400 border border-emerald-800/50 px-2.5 py-1 rounded-lg">VIP</span>
+                    </div>
+
+                    <form id="extractionForm" class="space-y-5">
+                        <div>
+                            <label class="block text-xs font-medium text-brandMuted mb-1.5">Plataforma / Servicio Digital</label>
+                            <select id="selectPlatform" required class="w-full bg-brandBg border border-brandBorder rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-brandPrimary transition cursor-pointer">
+                                <option value="" disabled selected>Cargando plataformas...</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-medium text-brandMuted mb-1.5">Correo Asignado</label>
+                            <input type="email" id="inputEmail" required placeholder="tu-cuenta@dominio.com" class="w-full bg-brandBg border border-brandBorder rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-brandPrimary transition font-mono">
+                        </div>
+
+                        <button type="submit" id="btnExtract" class="w-full bg-gradient-to-r from-brandPrimary to-brandAccent hover:from-brandPrimaryHover hover:to-brandPrimary text-white font-bold py-3.5 rounded-xl text-sm transition duration-150 shadow-lg shadow-indigo-900/40 flex items-center justify-center space-x-2">
+                            <span>🔍 Buscar Código Ahora</span>
+                        </button>
+                    </form>
+
+                    <!-- Caja de Resultado del Código Extraído -->
+                    <div id="resultCard" class="mt-6 hidden bg-brandBg border border-brandBorder rounded-xl p-5 text-center space-y-3 relative overflow-hidden">
+                        <span class="text-xs text-brandMuted block">Código de Verificación Obtenido:</span>
+                        <div id="extractedCodeText" class="text-4xl font-extrabold font-mono tracking-widest text-brandAccent select-all py-1">------</div>
+                        <div class="text-[11px] text-brandMuted flex items-center justify-center space-x-1" id="extractedMeta">
+                            <!-- Metadatos de expiración / tiempo -->
+                        </div>
+                        <button id="btnCopyCode" class="w-full bg-brandBorder hover:bg-slate-800 text-white text-xs font-semibold py-2.5 rounded-lg transition border border-gray-700 flex items-center justify-center space-x-1.5">
+                            <span>📋 Copiar al Portapapeles</span>
+                        </button>
+                    </div>
+
+                    <div id="extractionAlert" class="mt-4 hidden p-3.5 rounded-xl text-xs"></div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="px-6 py-4 text-center text-xs text-brandMuted border-t border-brandBorder/50 mt-8">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-2">
+            <span>&copy; 2026 EAcodigos. Extractor de Códigos de Streaming. Todos los derechos reservados.</span>
+            <div class="flex space-x-4">
+                <a href="/" class="hover:text-white transition">Landing Admin</a>
+                <a href="/admin" class="hover:text-white transition">Panel Administrador</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/js/app.js"></script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EAcodigos - Extractor Autónomo de Códigos</title>
+    <title>EAcodigos - Extractor Autónomo de Códigos de Streaming | Plataforma para Administradores</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 
     <!-- Tailwind CSS (Midnight Indigo Theme) -->
@@ -28,213 +28,245 @@
         }
     </script>
 </head>
-<body class="bg-brandBg text-brandText font-sans min-h-screen flex flex-col antialiased selection:bg-brandPrimary selection:text-white">
+<body class="bg-brandBg text-brandText font-sans min-h-screen flex flex-col justify-between antialiased selection:bg-brandPrimary selection:text-white">
 
-    <!-- Header Midnight Style -->
-    <header class="border-b border-brandBorder bg-brandCard/90 backdrop-blur-md px-6 py-4 flex justify-between items-center shadow-lg sticky top-0 z-40">
-        <div class="flex items-center space-x-3 cursor-pointer" onclick="window.location.reload()">
-            <img src="/favicon.svg" alt="Logo" class="w-8 h-8">
-            <span class="font-bold text-lg text-white tracking-wide">EAcodigos <span class="text-xs bg-brandBorder px-2.5 py-0.5 rounded-full text-brandAccent font-mono">v1.0 VIP</span></span>
-        </div>
-        <div class="flex items-center space-x-4">
-            <div id="userBadge" class="hidden flex items-center space-x-3">
-                <span class="text-xs text-brandMuted font-mono" id="chatIdSpan"></span>
-                <button id="logoutBtn" class="text-xs text-rose-400 hover:underline font-medium">Cerrar Sesión</button>
-            </div>
-            <a href="/admin" class="text-xs bg-brandCard border border-brandBorder hover:bg-brandBorder text-brandAccent px-3 py-1.5 rounded-xl font-medium transition flex items-center space-x-1.5 shadow">
-                <span>🔐 Acceso Admin</span>
+    <!-- Navbar Comercial -->
+    <header class="px-6 py-5 border-b border-brandBorder/60 bg-brandBg/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <a href="/" class="flex items-center space-x-3 cursor-pointer">
+                <img src="/favicon.svg" alt="Logo EAcodigos" class="w-9 h-9">
+                <div class="flex flex-col">
+                    <span class="font-bold text-xl text-white tracking-wide leading-none">EAcodigos</span>
+                    <span class="text-[10px] text-brandAccent font-mono mt-0.5">Extractor Autónomo de Códigos</span>
+                </div>
             </a>
+            <div class="flex items-center space-x-3 md:space-x-4">
+                <a href="/login" class="text-xs md:text-sm text-brandMuted hover:text-white px-3 py-2 rounded-xl font-medium transition">
+                    Acceso Clientes
+                </a>
+                <a href="/admin" class="text-xs md:text-sm bg-gradient-to-r from-brandPrimary to-brandAccent hover:from-brandPrimaryHover hover:to-brandPrimary text-white px-4 py-2.5 rounded-xl font-bold transition shadow-lg shadow-indigo-900/40 flex items-center space-x-1.5">
+                    <span>🔐 Iniciar Sesión Admin</span>
+                </a>
+            </div>
         </div>
     </header>
 
-    <!-- Main Content Container -->
-    <main class="flex-grow flex flex-col items-center justify-center p-4 md:p-8 space-y-12">
+    <main class="flex-grow">
+        <!-- Hero Section Comercial (Orientado a Administradores/Revendedores) -->
+        <section class="relative py-16 md:py-24 px-6 overflow-hidden">
+            <!-- Glow Background Effect -->
+            <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-indigo-600/15 blur-[120px] rounded-full pointer-events-none"></div>
 
-        <!-- 1. HERO & PRESENTACIÓN EAcodigos (Solo visible si no ha iniciado sesión) -->
-        <section id="heroSection" class="w-full max-w-4xl text-center space-y-6 pt-4">
-            <div class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-indigo-950/70 border border-indigo-800/50 text-xs text-brandAccent font-mono shadow-inner">
-                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span>Plataforma Privada & Autónoma de Verificación</span>
-            </div>
-            <h1 class="text-3xl md:text-5xl font-extrabold text-white tracking-tight leading-tight">
-                Gestión y Extracción de Códigos <br class="hidden md:inline">
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-brandPrimary via-brandAccent to-purple-400">Rápida, Segura y Sin Exponer Credenciales</span>
-            </h1>
-            <p class="text-sm md:text-base text-brandMuted max-w-2xl mx-auto leading-relaxed">
-                EAcodigos conecta tus servicios digitales con un sistema de consulta inteligente on-demand. Automatización continua sin bloqueos de seguridad.
-            </p>
-            <div class="flex items-center justify-center space-x-4 pt-2">
-                <a href="#accessSection" class="bg-brandPrimary hover:bg-brandPrimaryHover text-white text-sm font-semibold px-6 py-3 rounded-xl transition shadow-lg shadow-indigo-900/40 flex items-center space-x-2">
-                    <span>🚀 Ingresar al Extractor</span>
-                </a>
-            </div>
-        </section>
+            <div class="max-w-7xl mx-auto text-center space-y-8 relative z-10">
+                <div class="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-indigo-950/80 border border-indigo-800/60 text-xs text-brandAccent font-mono shadow-inner">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>Software VIP de Automatización de Verificación</span>
+                </div>
 
-        <!-- 2. SHOWCASE DE MOCKUPS VISUALES (Agnósticos) -->
-        <section id="mockupSection" class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Mockup Tarjeta Cliente -->
-            <div class="bg-brandCard border border-brandBorder rounded-2xl p-6 shadow-xl relative overflow-hidden group hover:border-brandAccent/40 transition">
-                <div class="flex items-center justify-between border-b border-brandBorder pb-3 mb-4">
-                    <div class="flex items-center space-x-2">
-                        <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
-                        <span class="text-xs font-bold text-white font-mono">PANEL CLIENTE VIP</span>
-                    </div>
-                    <span class="text-[10px] bg-brandBg text-brandMuted px-2 py-0.5 rounded font-mono">En tiempo real</span>
-                </div>
-                <div class="space-y-3 opacity-90">
-                    <div class="bg-brandBg border border-brandBorder rounded-xl p-3">
-                        <span class="text-[10px] text-brandMuted block">Servicio Seleccionado</span>
-                        <span class="text-xs text-white font-semibold">Servicio Digital #1</span>
-                    </div>
-                    <div class="bg-brandBg border border-brandBorder rounded-xl p-3 flex justify-between items-center">
-                        <div>
-                            <span class="text-[10px] text-brandMuted block">Código Entregado</span>
-                            <span class="text-xl font-bold font-mono text-brandAccent tracking-wider">8 4 9 2 0 1</span>
-                        </div>
-                        <span class="text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800/50 px-2 py-1 rounded-lg">✓ Verificado</span>
-                    </div>
-                </div>
-            </div>
+                <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold text-white tracking-tight leading-tight max-w-5xl mx-auto">
+                    Entrega códigos de verificación y de viaje a tus clientes, <br class="hidden sm:inline">
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-brandPrimary via-brandAccent to-purple-400">fácil y en cualquier momento.</span>
+                </h1>
 
-            <!-- Mockup Tarjeta Admin -->
-            <div class="bg-brandCard border border-brandBorder rounded-2xl p-6 shadow-xl relative overflow-hidden group hover:border-brandAccent/40 transition">
-                <div class="flex items-center justify-between border-b border-brandBorder pb-3 mb-4">
-                    <div class="flex items-center space-x-2">
-                        <span class="w-3 h-3 rounded-full bg-indigo-500"></span>
-                        <span class="text-xs font-bold text-white font-mono">CONEXIÓN OAUTH2</span>
-                    </div>
-                    <span class="text-[10px] bg-brandBg text-indigo-400 px-2 py-0.5 rounded font-mono">1-Clic</span>
+                <p class="text-base sm:text-lg text-brandMuted max-w-3xl mx-auto leading-relaxed">
+                    Potencia tu servicio de cuentas de streaming. Olvídate de responder mensajes a deshoras o compartir tus contraseñas personales. **EAcodigos** automatiza la extracción de códigos 24/7 de forma segura, privada y con control total sobre tus clientes.
+                </p>
+
+                <!-- CTAs -->
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+                    <a href="/admin" class="w-full sm:w-auto px-8 py-4 bg-brandPrimary hover:bg-brandPrimaryHover text-white font-bold rounded-xl text-base transition duration-150 shadow-xl shadow-indigo-900/40 flex items-center justify-center space-x-2">
+                        <span>Acceder al Panel de Control</span>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </a>
+                    <a href="/login" class="w-full sm:w-auto px-8 py-4 bg-brandCard hover:bg-brandBorder text-brandText font-semibold rounded-xl text-base border border-brandBorder transition flex items-center justify-center space-x-2">
+                        <span>Ver Demo Portal Cliente</span>
+                    </a>
                 </div>
-                <div class="space-y-3 opacity-90">
-                    <div class="bg-brandBg border border-brandBorder rounded-xl p-3 flex justify-between items-center">
-                        <div class="font-mono text-xs">
-                            <span class="text-white block font-bold">cuenta_flota@servicio.com</span>
-                            <span class="text-[10px] text-brandMuted">Token Renovable Continuo</span>
-                        </div>
-                        <span class="text-[10px] bg-indigo-950 text-brandAccent border border-indigo-800/50 px-2.5 py-1 rounded-full font-mono">OAUTH2</span>
+
+                <!-- Stats Badges -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto pt-12 border-t border-brandBorder/60">
+                    <div class="p-4 bg-brandCard/60 border border-brandBorder/60 rounded-2xl">
+                        <div class="text-2xl md:text-3xl font-extrabold text-white font-mono">100%</div>
+                        <div class="text-xs text-brandMuted mt-1">Autónomo 24/7</div>
                     </div>
-                    <div class="bg-brandBg border border-brandBorder rounded-xl p-3 flex justify-between items-center">
-                        <span class="text-xs text-brandMuted">Estado de Conexión:</span>
-                        <span class="text-xs text-emerald-400 font-medium">✓ Online sin bloqueos</span>
+                    <div class="p-4 bg-brandCard/60 border border-brandBorder/60 rounded-2xl">
+                        <div class="text-2xl md:text-3xl font-extrabold text-brandAccent font-mono">&lt; 3 seg</div>
+                        <div class="text-xs text-brandMuted mt-1">Tiempo de Respuesta</div>
+                    </div>
+                    <div class="p-4 bg-brandCard/60 border border-brandBorder/60 rounded-2xl">
+                        <div class="text-2xl md:text-3xl font-extrabold text-emerald-400 font-mono">OAuth2</div>
+                        <div class="text-xs text-brandMuted mt-1">Conexión Oficial SSL</div>
+                    </div>
+                    <div class="p-4 bg-brandCard/60 border border-brandBorder/60 rounded-2xl">
+                        <div class="text-2xl md:text-3xl font-extrabold text-purple-400 font-mono">VIP</div>
+                        <div class="text-xs text-brandMuted mt-1">Lista Blanca Telegram</div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- 3. SECCIÓN DE ACCESO CLIENTE (FORMULARIO CON WHITELIST) -->
-        <section id="accessSection" class="w-full max-w-md">
-            
-            <!-- SECCIÓN DE AUTENTICACIÓN TELEGRAM (LOGIN) -->
-            <div id="authSection" class="w-full bg-brandCard border border-brandBorder rounded-2xl p-8 shadow-2xl">
-                <div class="text-center mb-6">
-                    <div class="inline-flex p-3.5 bg-brandBg border border-brandBorder rounded-2xl mb-3 shadow-inner">
-                        <img src="/favicon.svg" class="w-10 h-10">
-                    </div>
-                    <h2 class="text-xl font-bold text-white tracking-tight">Acceso a EAcodigos</h2>
-                    <p class="text-xs text-indigo-300 font-medium mt-1.5">Obtén el código de tus cuentas fácilmente.</p>
+        <!-- Mockups Interactivos del Sistema (Demostración de Pantallas) -->
+        <section class="py-16 px-6 bg-brandCard/30 border-y border-brandBorder/50">
+            <div class="max-w-7xl mx-auto space-y-12">
+                <div class="text-center space-y-3">
+                    <span class="text-xs font-mono text-brandAccent tracking-wider uppercase">Demostración Visual del Sistema</span>
+                    <h2 class="text-3xl md:text-4xl font-bold text-white">Conoce la Plataforma por Dentro</h2>
+                    <p class="text-sm text-brandMuted max-w-2xl mx-auto">Una suite potente diseñada para administradores exigentes y una interfaz limpia para tus clientes.</p>
                 </div>
 
-                <!-- Paso A: Solicitar OTP -->
-                <form id="requestOtpForm" class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-medium text-brandMuted mb-1">Telegram Chat ID Autorizado</label>
-                        <input type="number" id="inputChatId" required placeholder="Ej. 123456789" class="w-full bg-brandBg border border-brandBorder rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brandPrimary text-white font-mono transition">
-                    </div>
-                    <button type="submit" id="btnSendOtp" class="w-full bg-brandPrimary hover:bg-brandPrimaryHover text-white font-medium py-3.5 rounded-xl text-sm transition duration-150 shadow-lg shadow-indigo-900/30 flex items-center justify-center">
-                        <span>Enviar Código a Telegram</span>
-                    </button>
-                </form>
-
-                <!-- Paso B: Verificar OTP (Oculto inicialmente) -->
-                <form id="verifyOtpForm" class="space-y-4 hidden mt-4">
-                    <div class="p-3 bg-indigo-950/40 border border-indigo-800/50 rounded-xl text-xs text-brandAccent mb-2">
-                        Código enviado a Telegram. Expira en 5 minutos.
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-brandMuted mb-1">Código OTP (6 dígitos)</label>
-                        <input type="text" id="inputOtp" required maxlength="6" placeholder="123456" class="w-full bg-brandBg border border-brandBorder rounded-xl px-4 py-3 text-center text-xl tracking-widest font-mono text-white focus:outline-none focus:border-brandPrimary">
-                    </div>
-                    <button type="submit" id="btnVerifyOtp" class="w-full bg-brandAccent hover:bg-indigo-400 text-brandBg font-bold py-3 rounded-xl text-sm transition duration-150">
-                        Verificar e Ingresar
-                    </button>
-                </form>
-                
-                <div id="authAlert" class="mt-4 hidden p-3.5 rounded-xl text-xs"></div>
-            </div>
-
-            <!-- SECCIÓN PRINCIPAL: CONSULTA DE CÓDIGOS (Oculto inicialmente) -->
-            <div id="extractionSection" class="w-full max-w-xl bg-brandCard border border-brandBorder rounded-2xl p-8 shadow-2xl hidden">
-                <div class="flex justify-between items-center border-b border-brandBorder pb-4 mb-6">
-                    <div>
-                        <h2 class="text-lg font-bold text-white">Extracción de Código</h2>
-                        <p class="text-xs text-brandMuted">Consulta tu código sin exponer el acceso a tu correo.</p>
-                    </div>
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-950 text-brandAccent border border-indigo-800/50">
-                        🔒 Acceso VIP
-                    </span>
-                </div>
-
-                <form id="extractionForm" class="space-y-5">
-                    <div>
-                        <label class="block text-xs font-medium text-brandMuted mb-1.5">Seleccionar Plataforma</label>
-                        <select id="selectPlatform" required class="w-full bg-brandBg border border-brandBorder rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-brandPrimary cursor-pointer">
-                            <option value="">Cargando plataformas...</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-medium text-brandMuted mb-1.5">Correo Electrónico a Consultar</label>
-                        <input type="email" id="inputEmail" required placeholder="ejemplo@midominio.com" class="w-full bg-brandBg border border-brandBorder rounded-xl px-4 py-3 text-sm text-white font-mono focus:outline-none focus:border-brandPrimary">
-                    </div>
-
-                    <!-- Botón de Generar Código y Cooldown -->
-                    <div>
-                        <button type="submit" id="btnExtract" class="w-full bg-brandPrimary hover:bg-brandPrimaryHover disabled:bg-gray-800 disabled:text-gray-500 text-white font-medium py-3.5 rounded-xl text-sm transition duration-150 shadow-lg shadow-indigo-900/30 flex items-center justify-center space-x-2">
-                            <span id="btnExtractText">Generar Código</span>
-                        </button>
-                    </div>
-                </form>
-
-                <!-- Barra de Cooldown de 7 Minutos -->
-                <div id="cooldownContainer" class="mt-4 hidden space-y-2">
-                    <div class="flex justify-between text-xs text-brandMuted font-mono">
-                        <span>Tiempo de espera obligatorio</span>
-                        <span id="cooldownTimerText" class="text-amber-400 font-bold">07:00</span>
-                    </div>
-                    <div class="w-full bg-brandBg rounded-full h-2 overflow-hidden border border-brandBorder">
-                        <div id="cooldownProgressBar" class="bg-amber-500 h-full w-full transition-all duration-1000"></div>
-                    </div>
-                </div>
-
-                <!-- RESULTADO DEL CÓDIGO EXTRAÍDO -->
-                <div id="resultContainer" class="mt-6 hidden">
-                    <label class="block text-xs font-medium text-brandMuted mb-2">Código Extraído:</label>
-                    <div class="relative bg-brandBg border border-brandBorder rounded-2xl p-6 font-mono flex items-center justify-between shadow-inner">
-                        <div>
-                            <span id="extractedCodeText" class="text-4xl font-extrabold text-brandAccent tracking-widest">------</span>
-                            <p id="platformResultBadge" class="text-xs text-brandMuted mt-1.5">Obtenido recientemente</p>
+                <!-- Grid de Pantallas Mockup -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    
+                    <!-- MOCKUP 1: PANEL DE ADMINISTRACIÓN -->
+                    <div class="bg-brandCard border border-brandBorder rounded-2xl p-6 shadow-2xl space-y-5 flex flex-col justify-between">
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between border-b border-brandBorder pb-3">
+                                <div class="flex items-center space-x-2">
+                                    <span class="w-3 h-3 rounded-full bg-rose-500"></span>
+                                    <span class="w-3 h-3 rounded-full bg-amber-500"></span>
+                                    <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+                                    <span class="text-xs font-mono text-brandMuted ml-2">Panel Administrador - eacodigos.com/admin</span>
+                                </div>
+                                <span class="text-[10px] bg-brandPrimary/20 text-brandAccent border border-brandPrimary/30 px-2 py-0.5 rounded font-mono">Control Total</span>
+                            </div>
+                            
+                            <h3 class="text-xl font-bold text-white">1. Control Total de Cuentas y Lista Blanca VIP</h3>
+                            <p class="text-xs text-brandMuted">Gestiona todas tus credenciales IMAP/OAuth2 y administra qué clientes (IDs de Telegram) tienen permiso para extraer códigos.</p>
+                            
+                            <!-- Mini Tabla Mockup Admin -->
+                            <div class="bg-brandBg border border-brandBorder rounded-xl p-3 overflow-x-auto space-y-2">
+                                <div class="flex justify-between items-center text-[11px] font-mono text-brandMuted border-b border-brandBorder/60 pb-1.5 px-1">
+                                    <span>TELEGRAM ID</span>
+                                    <span>ESTADO</span>
+                                    <span>ACCIONES</span>
+                                </div>
+                                <div class="flex justify-between items-center text-xs font-mono py-1 px-1">
+                                    <span class="text-white">659384021 (Cliente VIP)</span>
+                                    <span class="bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded text-[10px] border border-emerald-800/50">✓ Autorizado</span>
+                                    <span class="text-xs text-rose-400">Revocar</span>
+                                </div>
+                                <div class="flex justify-between items-center text-xs font-mono py-1 px-1">
+                                    <span class="text-white">782910453 (Nuevo)</span>
+                                    <span class="bg-amber-950 text-amber-400 px-2 py-0.5 rounded text-[10px] border border-amber-800/50">Pendiente</span>
+                                    <span class="text-xs text-brandAccent underline cursor-pointer">Autorizar</span>
+                                </div>
+                            </div>
                         </div>
-                        <button id="btnCopyCode" class="bg-brandCard hover:bg-brandBorder text-white text-xs px-4 py-2.5 rounded-xl border border-brandBorder transition flex items-center space-x-2 shadow">
-                            <svg class="w-4 h-4 text-brandAccent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                            <span>Copiar</span>
-                        </button>
+
+                        <div class="pt-2 border-t border-brandBorder/40 flex items-center justify-between text-xs text-brandMuted">
+                            <span>✓ Cero filtraciones de clave master</span>
+                            <span>✓ Logs auditables en tiempo real</span>
+                        </div>
                     </div>
+
+                    <!-- MOCKUP 2: PORTAL CLIENTE (ESTILO FACEBOOK SPLIT) -->
+                    <div class="bg-brandCard border border-brandBorder rounded-2xl p-6 shadow-2xl space-y-5 flex flex-col justify-between">
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between border-b border-brandBorder pb-3">
+                                <div class="flex items-center space-x-2">
+                                    <span class="w-3 h-3 rounded-full bg-rose-500"></span>
+                                    <span class="w-3 h-3 rounded-full bg-amber-500"></span>
+                                    <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+                                    <span class="text-xs font-mono text-brandMuted ml-2">Portal Cliente - eacodigos.com/login</span>
+                                </div>
+                                <span class="text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800/50 px-2 py-0.5 rounded font-mono">Experiencia 5 estrellas</span>
+                            </div>
+                            
+                            <h3 class="text-xl font-bold text-white">2. Experiencia Ágil para tus Clientes</h3>
+                            <p class="text-xs text-brandMuted">Tus clientes acceden con su ID de Telegram autorizada, eligen la plataforma digital e ingresan su correo para recibir su código al instante.</p>
+                            
+                            <!-- Mini Card Mockup Cliente -->
+                            <div class="bg-brandBg border border-brandBorder rounded-xl p-4 space-y-3">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-xs text-brandMuted font-mono">Plataforma Digital #1</span>
+                                    <span class="text-[10px] bg-brandPrimary/20 text-brandAccent px-2 py-0.5 rounded font-mono">Sin contraseña</span>
+                                </div>
+                                <div class="bg-brandCard border border-brandBorder p-3 rounded-lg flex justify-between items-center">
+                                    <div>
+                                        <span class="text-[10px] text-brandMuted block">Código de Verificación:</span>
+                                        <span class="text-2xl font-bold font-mono text-brandAccent tracking-widest">9 4 1 8 2 0</span>
+                                    </div>
+                                    <span class="text-xs bg-brandBorder text-white px-2.5 py-1.5 rounded-lg border border-gray-700">📋 Copiar</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-2 border-t border-brandBorder/40 flex items-center justify-between text-xs text-brandMuted">
+                            <span>✓ Protección anti-abuso (Cooldown)</span>
+                            <span>✓ Entrega en 3 segundos</span>
+                        </div>
+                    </div>
+
                 </div>
-
-                <!-- Mensaje de Alerta -->
-                <div id="extractionAlert" class="mt-4 hidden p-3 rounded-xl text-xs"></div>
             </div>
-
         </section>
 
+        <!-- Beneficios Clave para Admins -->
+        <section class="py-16 px-6 max-w-7xl mx-auto space-y-12">
+            <div class="text-center space-y-3">
+                <span class="text-xs font-mono text-brandAccent tracking-wider uppercase">¿Por qué elegir EAcodigos?</span>
+                <h2 class="text-3xl md:text-4xl font-bold text-white">Diseñado para Resolver los Problemas del Administrador</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-brandCard border border-brandBorder rounded-2xl p-6 space-y-3">
+                    <div class="w-12 h-12 rounded-xl bg-indigo-950/80 border border-indigo-800/50 flex items-center justify-center text-brandAccent text-xl font-bold">
+                        🛡️
+                    </div>
+                    <h3 class="text-lg font-bold text-white">Seguridad Total</h3>
+                    <p class="text-xs text-brandMuted leading-relaxed">Tus clientes nunca ven tus contraseñas ni acceden a tu bandeja de entrada personal. Solamente reciben el código extraído procesado de forma estricta.</p>
+                </div>
+
+                <div class="bg-brandCard border border-brandBorder rounded-2xl p-6 space-y-3">
+                    <div class="w-12 h-12 rounded-xl bg-indigo-950/80 border border-indigo-800/50 flex items-center justify-center text-brandAccent text-xl font-bold">
+                        ⚡
+                    </div>
+                    <h3 class="text-lg font-bold text-white">Cero Soporte Manual</h3>
+                    <p class="text-xs text-brandMuted leading-relaxed">Deja de recibir llamadas o mensajes a medianoche pidiendo códigos de hogar o de viaje. El sistema trabaja automáticamente 24/7 sin tu intervención.</p>
+                </div>
+
+                <div class="bg-brandCard border border-brandBorder rounded-2xl p-6 space-y-3">
+                    <div class="w-12 h-12 rounded-xl bg-indigo-950/80 border border-indigo-800/50 flex items-center justify-center text-brandAccent text-xl font-bold">
+                        🔒
+                    </div>
+                    <h3 class="text-lg font-bold text-white">Exclusividad VIP</h3>
+                    <p class="text-xs text-brandMuted leading-relaxed">Solo los clientes a quienes apruebes su ID de Telegram podrán solicitar información. Si un cliente cancela, revocas su acceso en 1 clic.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Final -->
+        <section class="py-16 px-6 bg-gradient-to-b from-brandCard to-brandBg border-t border-brandBorder/60">
+            <div class="max-w-4xl mx-auto text-center space-y-6">
+                <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
+                    ¿Listo para automatizar tu negocio de cuentas?
+                </h2>
+                <p class="text-sm sm:text-base text-brandMuted max-w-xl mx-auto">
+                    Inicia sesión en tu Panel Administrador para gestionar tus credenciales y autorizar a tus primeros clientes VIP.
+                </p>
+                <div class="pt-2">
+                    <a href="/admin" class="inline-flex px-8 py-4 bg-brandPrimary hover:bg-brandPrimaryHover text-white font-bold rounded-xl text-base transition shadow-xl shadow-indigo-900/50">
+                        Ingresar al Panel de Administrador
+                    </a>
+                </div>
+            </div>
+        </section>
     </main>
 
-    <!-- Footer Midnight Style -->
-    <footer class="border-t border-brandBorder py-6 text-center text-xs text-brandMuted">
-        EAcodigos &copy; 2026 - Sistema Autónomo de Extracción | <a href="/admin" class="text-brandAccent hover:underline font-medium">Panel Administrativo</a>
+    <!-- Footer -->
+    <footer class="px-6 py-6 text-center text-xs text-brandMuted border-t border-brandBorder/50">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-2">
+                <img src="/favicon.svg" alt="Logo" class="w-5 h-5">
+                <span class="font-bold text-white">EAcodigos</span>
+                <span>&copy; 2026. Todos los derechos reservados.</span>
+            </div>
+            <div class="flex space-x-6">
+                <a href="/login" class="hover:text-white transition">Acceso Clientes</a>
+                <a href="/admin" class="hover:text-white transition">Panel Administrador</a>
+            </div>
+        </div>
     </footer>
 
-    <!-- Frontend Script -->
-    <script src="/static/app.js"></script>
 </body>
 </html>

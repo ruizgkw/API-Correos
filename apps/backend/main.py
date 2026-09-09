@@ -37,8 +37,12 @@ async def favicon():
     return FileResponse(os.path.join(FRONTEND_DIR, "favicon.svg"))
 
 @app.get("/", include_in_schema=False)
-async def serve_client_spa():
+async def serve_landing_page():
     return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
+
+@app.get("/login", include_in_schema=False)
+async def serve_login_page():
+    return FileResponse(os.path.join(FRONTEND_DIR, "login.html"))
 
 @app.get("/admin", include_in_schema=False)
 async def serve_admin_spa():
