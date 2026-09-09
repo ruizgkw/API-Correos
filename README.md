@@ -1,4 +1,4 @@
-# 🚀 API Correos - Extractor Autónomo de Códigos de Streaming
+# 🚀 EAcodigos - Extractor Autónomo de Códigos de Verificación
 
 ![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)
 ![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)
@@ -7,15 +7,16 @@
 ![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
 
-Plataforma Web & API diseñada para permitir la extracción autónoma de códigos de verificación de plataformas de streaming (**Disney+, HBO Max, Netflix, etc.**) de forma segura vía IMAP, sin exponer las credenciales de correo a los usuarios finales.
+Plataforma Web & API orientada a servicios de automatización para la extracción autónoma de códigos de verificación de plataformas digitales de forma segura vía IMAP y OAuth2, sin exponer las credenciales de correo a los usuarios finales.
 
 ---
 
 ## 🎨 Identidad Visual y Puertos por Defecto
 
+* **Nombre de Marca:** **EAcodigos** *(Extractor Autónomo de Códigos)*.
 * **Tema Visual:** *"Midnight Indigo"* (Obsidian `#0B0F19`, Indigo `#6366F1`, Violet `#818CF8`).
 * **Puerto de Servicio Local:** `http://localhost:8990`
-* **Portal de Clientes (SPA):** `http://localhost:8990/`
+* **Landing Page & Portal de Clientes (SPA):** `http://localhost:8990/`
 * **Portal Administrativo (SPA):** `http://localhost:8990/admin`
 * **Documentación API (OpenAPI/Swagger):** `http://localhost:8990/docs`
 
@@ -23,23 +24,26 @@ Plataforma Web & API diseñada para permitir la extracción autónoma de código
 
 ## ⚙️ Características Principales
 
-* 🔐 **Autenticación Doble Factor (Telegram Bot):**
+* 🔐 **Acceso Privado & Lista Blanca VIP (Telegram Bot):**
+  * **Control de Lista Blanca:** Solo los clientes con Telegram Chat ID previa y explícitamente autorizados por el Administrador pueden recibir OTPs de acceso.
   * **Usuarios / Clientes:** Inicio de sesión mediante Telegram Chat ID y OTP de 6 dígitos enviado por Telegram Bot (válido por 5 min).
   * **Administradores:** Inicio de sesión con Usuario + Contraseña + Verificación OTP de 2FA por Telegram.
 * 🛡️ **Seguridad de Alto Nivel:**
   * Credenciales IMAP de cuentas de correo cifradas en reposo con **Fernet AES-256**.
+  * Autenticación moderna **OAuth2 (XOAUTH2)** con refresco continuo de tokens para Microsoft y Google.
   * Contraseñas de administrador hasheadas con **PBKDF2-SHA256**.
   * Tokens de sesión JWT (HS256) con expiración automática.
 * ⚡ **Estrategia Dual de Extracción de Códigos:**
-  * **Caso A (Direct Parsing / Disney+ / HBO Max):** Consulta IMAP SSL ultrarrápida on-demand, filtrado por remitente dinámico, validación de antigüedad (< 10 min), filtro de palabras clave en el asunto y parser regex para códigos con dígitos separados por espacios (`7 6 2 7 4 0`).
-  * **Caso B (Web Scraping / Netflix):** Extracción interactiva con navegador Playwright Chromium headless para resolver enlaces de verificación de hogar/viaje.
+  * **Caso A (Direct Parsing / IMAP):** Consulta IMAP SSL ultrarrápida on-demand, filtrado por remitente dinámico, validación de antigüedad (< 10 min), filtro de palabras clave en el asunto y parser regex para códigos con dígitos separados por espacios (`7 6 2 7 4 0`).
+  * **Caso B (Web Scraping / Playwright):** Extracción interactiva con navegador Playwright Chromium headless para resolver enlaces de verificación de hogar/viaje.
 * ⏳ **Rate Limiting & Cooldown Persistente:**
   * Cooldown de **7 minutos (420 s)** gestionado en Redis por combinación de `(Telegram ID + Plataforma + Correo)`.
   * Barra de progreso y temporizador interactivo en la interfaz cliente que persiste al recargar la página.
-* 💻 **Panel de Administración Completo:**
+* 💻 **Panel de Administración Completo (EAcodigos Admin):**
+  * Gestión de Lista Blanca VIP para autorizar o revocar accesos a clientes (`/api/v1/admin/clients/authorize`).
+  * Botones de 1-Clic OAuth2 para vincular cuentas de Microsoft y Google.
   * Registro y gestión de cuentas de correo (Gmail App Passwords, Outlook, IMAP genérico).
-  * Función **"Probar Conexión IMAP"** para verificar credenciales antes de guardar.
-  * Edición y actualización de datos de cuentas registradas (`PUT /api/v1/admin/mail-accounts/{id}`).
+  * Función **"Probar Conexión IMAP"** para verificar credenciales en vivo.
 
 ---
 
