@@ -62,6 +62,49 @@ function setupEventListeners() {
             setTimeout(() => btn.innerHTML = orig, 1500);
         });
     });
+
+    // Control modal de Login en Móvil
+    const mobileToggleBtn = document.getElementById('mobileLoginToggleBtn');
+    const closeMobileBtn = document.getElementById('closeMobileModalBtn');
+    const backdrop = document.getElementById('mobileModalBackdrop');
+
+    if (mobileToggleBtn) {
+        mobileToggleBtn.addEventListener('click', () => {
+            openMobileModal();
+        });
+    }
+
+    if (closeMobileBtn) {
+        closeMobileBtn.addEventListener('click', () => {
+            closeMobileModal();
+        });
+    }
+
+    if (backdrop) {
+        backdrop.addEventListener('click', () => {
+            closeMobileModal();
+        });
+    }
+}
+
+function openMobileModal() {
+    const col = document.getElementById('rightLoginColumn');
+    const backdrop = document.getElementById('mobileModalBackdrop');
+    if (col) {
+        col.classList.remove('hidden');
+        col.classList.add('fixed', 'inset-x-4', 'top-16', 'z-50', 'max-w-md', 'mx-auto');
+    }
+    if (backdrop) backdrop.classList.remove('hidden');
+}
+
+function closeMobileModal() {
+    const col = document.getElementById('rightLoginColumn');
+    const backdrop = document.getElementById('mobileModalBackdrop');
+    if (col && window.innerWidth < 1024) {
+        col.classList.add('hidden');
+        col.classList.remove('fixed', 'inset-x-4', 'top-16', 'z-50');
+    }
+    if (backdrop) backdrop.classList.add('hidden');
 }
 
 function showAuthSection() {
@@ -77,8 +120,12 @@ function showExtractionSection(chatId) {
     document.getElementById('extractionSection').classList.remove('hidden');
     document.getElementById('userBadge').classList.remove('hidden');
     document.getElementById('chatIdSpan').innerText = `ID: ${chatId}`;
-    const leftCol = document.getElementById('leftBrandColumn');
-    if (leftCol) leftCol.classList.add('hidden');
+    
+    // Al autenticar, asegurarse de que se muestre en móvil si está en modal
+    const rightCol = document.getElementById('rightLoginColumn');
+    if (rightCol && window.innerWidth < 1024) {
+        rightCol.classList.remove('hidden');
+    }
 }
 
 async function requestOtp(chatId) {

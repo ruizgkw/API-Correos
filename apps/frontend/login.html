@@ -31,16 +31,21 @@
 <body class="bg-brandBg text-brandText font-sans min-h-screen flex flex-col justify-between antialiased selection:bg-brandPrimary selection:text-white">
 
     <!-- Header Midnight Style -->
-    <header class="px-6 py-4 flex justify-between items-center z-40 max-w-7xl mx-auto w-full border-b border-brandBorder/50">
+    <header class="px-6 py-4 flex justify-between items-center z-40 max-w-7xl mx-auto w-full border-b border-brandBorder/50 sticky top-0 bg-brandBg/90 backdrop-blur-md">
         <a href="/login" class="flex items-center space-x-3 hover:opacity-90 transition">
             <img src="/favicon.svg" alt="Logo" class="w-8 h-8">
             <span class="font-bold text-xl text-white tracking-wide">EAcodigos <span class="text-xs bg-brandBorder px-2.5 py-0.5 rounded-full text-brandAccent font-mono">v1.0 VIP</span></span>
         </a>
-        <div class="flex items-center space-x-4">
+        <div class="flex items-center space-x-3">
             <div id="userBadge" class="hidden flex items-center space-x-3">
                 <span class="text-xs text-brandMuted font-mono" id="chatIdSpan"></span>
                 <button id="logoutBtn" class="text-xs text-rose-400 hover:underline font-medium">Cerrar Sesión</button>
             </div>
+
+            <!-- BOTÓN MÓVIL ESTÁTICO PARA ABRIR LOGIN -->
+            <button id="mobileLoginToggleBtn" class="lg:hidden text-xs bg-gradient-to-r from-brandPrimary to-brandAccent hover:from-brandPrimaryHover hover:to-brandPrimary text-white px-3.5 py-2 rounded-xl font-bold transition flex items-center space-x-1.5 shadow-lg shadow-indigo-900/40">
+                <span>🔑 Iniciar Sesión</span>
+            </button>
         </div>
     </header>
 
@@ -138,88 +143,98 @@
                 </div>
             </div>
 
-            <!-- COLUMNA DERECHA: CAJA DE INICIO DE SESIÓN ESTÁTICA / STICKY (5 / 12) -->
-            <div id="rightLoginColumn" class="lg:col-span-5 w-full max-w-md mx-auto lg:ml-auto sticky top-6">
+            <!-- COLUMNA DERECHA: CAJA DE INICIO DE SESIÓN / CÓDIGOS (EN MÓVIL SE PUEDE DESPLEGAR O MOSTRAR) -->
+            <div id="rightLoginColumn" class="hidden lg:block lg:col-span-5 w-full max-w-md mx-auto lg:ml-auto sticky top-24 z-30">
                 
-                <!-- SECCIÓN DE AUTENTICACIÓN TELEGRAM (LOGIN FORM) -->
-                <div id="authSection" class="w-full bg-brandCard border border-brandBorder rounded-2xl p-8 shadow-2xl relative">
-                    <div class="text-center mb-6">
-                        <div class="inline-flex p-3 bg-brandBg border border-brandBorder rounded-2xl mb-3 shadow-inner">
-                            <img src="/favicon.svg" class="w-8 h-8">
-                        </div>
-                        <h2 class="text-xl font-bold text-white tracking-tight">Acceso a Clientes</h2>
-                        <p class="text-xs text-brandMuted mt-1">Ingresa tu Telegram Chat ID para recibir el OTP.</p>
-                    </div>
-
-                    <!-- Paso A: Solicitar OTP -->
-                    <form id="requestOtpForm" class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-medium text-brandMuted mb-1">Telegram Chat ID Autorizado</label>
-                            <input type="number" id="inputChatId" required placeholder="Ej. 123456789" class="w-full bg-brandBg border border-brandBorder rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brandPrimary text-white font-mono transition">
-                        </div>
-                        <button type="submit" id="btnSendOtp" class="w-full bg-brandPrimary hover:bg-brandPrimaryHover text-white font-semibold py-3.5 rounded-xl text-sm transition duration-150 shadow-lg shadow-indigo-900/30 flex items-center justify-center">
-                            <span>Enviar Código a Telegram</span>
-                        </button>
-                    </form>
-
-                    <!-- Paso B: Verificar OTP (Oculto inicialmente) -->
-                    <form id="verifyOtpForm" class="space-y-4 hidden mt-4">
-                        <div class="p-3 bg-indigo-950/40 border border-indigo-800/50 rounded-xl text-xs text-brandAccent mb-2">
-                            Código enviado a Telegram. Expira en 5 minutos.
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-brandMuted mb-1">Código OTP (6 dígitos)</label>
-                            <input type="text" id="inputOtp" required maxlength="6" placeholder="123456" class="w-full bg-brandBg border border-brandBorder rounded-xl px-4 py-3 text-center text-xl tracking-widest font-mono text-white focus:outline-none focus:border-brandPrimary">
-                        </div>
-                        <button type="submit" id="btnVerifyOtp" class="w-full bg-brandAccent hover:bg-indigo-400 text-brandBg font-bold py-3 rounded-xl text-sm transition duration-150">
-                            Verificar e Ingresar
-                        </button>
-                    </form>
+                <!-- CONTAINER INTERNO QUE ALBERGA AUTH Y EXTRACTION -->
+                <div id="loginCardWrapper" class="w-full bg-brandCard border border-brandBorder rounded-2xl p-6 md:p-8 shadow-2xl relative">
                     
-                    <div id="authAlert" class="mt-4 hidden p-3.5 rounded-xl text-xs"></div>
-                </div>
+                    <!-- BOTÓN CERRAR MODAL (Solo visible en móvil) -->
+                    <button id="closeMobileModalBtn" class="lg:hidden absolute top-4 right-4 text-brandMuted hover:text-white p-1 rounded-lg bg-brandBg border border-brandBorder">
+                        ✕
+                    </button>
 
-                <!-- SECCIÓN PRINCIPAL: CONSULTA DE CÓDIGOS (Reemplaza la caja de login al autenticar) -->
-                <div id="extractionSection" class="w-full bg-brandCard border border-brandBorder rounded-2xl p-8 shadow-2xl hidden">
-                    <div class="flex justify-between items-center border-b border-brandBorder pb-4 mb-6">
-                        <div>
-                            <h2 class="text-lg font-bold text-white">Extracción de Código</h2>
-                            <p class="text-xs text-brandMuted">Consulta tu código sin exponer tu correo.</p>
+                    <!-- SECCIÓN DE AUTENTICACIÓN TELEGRAM (LOGIN FORM) -->
+                    <div id="authSection" class="w-full">
+                        <div class="text-center mb-6">
+                            <div class="inline-flex p-3 bg-brandBg border border-brandBorder rounded-2xl mb-3 shadow-inner">
+                                <img src="/favicon.svg" class="w-8 h-8">
+                            </div>
+                            <h2 class="text-xl font-bold text-white tracking-tight">Acceso a Clientes</h2>
+                            <p class="text-xs text-brandMuted mt-1">Ingresa tu Telegram Chat ID para recibir el OTP.</p>
                         </div>
-                        <span class="text-xs font-mono bg-emerald-950 text-emerald-400 border border-emerald-800/50 px-2.5 py-1 rounded-lg">VIP</span>
+
+                        <!-- Paso A: Solicitar OTP -->
+                        <form id="requestOtpForm" class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-medium text-brandMuted mb-1">Telegram Chat ID Autorizado</label>
+                                <input type="number" id="inputChatId" required placeholder="Ej. 123456789" class="w-full bg-brandBg border border-brandBorder rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brandPrimary text-white font-mono transition">
+                            </div>
+                            <button type="submit" id="btnSendOtp" class="w-full bg-brandPrimary hover:bg-brandPrimaryHover text-white font-semibold py-3.5 rounded-xl text-sm transition duration-150 shadow-lg shadow-indigo-900/30 flex items-center justify-center">
+                                <span>Enviar Código a Telegram</span>
+                            </button>
+                        </form>
+
+                        <!-- Paso B: Verificar OTP (Oculto inicialmente) -->
+                        <form id="verifyOtpForm" class="space-y-4 hidden mt-4">
+                            <div class="p-3 bg-indigo-950/40 border border-indigo-800/50 rounded-xl text-xs text-brandAccent mb-2">
+                                Código enviado a Telegram. Expira en 5 minutos.
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-brandMuted mb-1">Código OTP (6 dígitos)</label>
+                                <input type="text" id="inputOtp" required maxlength="6" placeholder="123456" class="w-full bg-brandBg border border-brandBorder rounded-xl px-4 py-3 text-center text-xl tracking-widest font-mono text-white focus:outline-none focus:border-brandPrimary">
+                            </div>
+                            <button type="submit" id="btnVerifyOtp" class="w-full bg-brandAccent hover:bg-indigo-400 text-brandBg font-bold py-3 rounded-xl text-sm transition duration-150">
+                                Verificar e Ingresar
+                            </button>
+                        </form>
+                        
+                        <div id="authAlert" class="mt-4 hidden p-3.5 rounded-xl text-xs"></div>
                     </div>
 
-                    <form id="extractionForm" class="space-y-5">
-                        <div>
-                            <label class="block text-xs font-medium text-brandMuted mb-1.5">Plataforma / Servicio Digital</label>
-                            <select id="selectPlatform" required class="w-full bg-brandBg border border-brandBorder rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-brandPrimary transition cursor-pointer">
-                                <option value="" disabled selected>Cargando plataformas...</option>
-                            </select>
+                    <!-- SECCIÓN PRINCIPAL: CONSULTA DE CÓDIGOS (Reemplaza la caja de login al autenticar) -->
+                    <div id="extractionSection" class="w-full hidden">
+                        <div class="flex justify-between items-center border-b border-brandBorder pb-4 mb-6">
+                            <div>
+                                <h2 class="text-lg font-bold text-white">Extracción de Código</h2>
+                                <p class="text-xs text-brandMuted">Consulta tu código sin exponer tu correo.</p>
+                            </div>
+                            <span class="text-xs font-mono bg-emerald-950 text-emerald-400 border border-emerald-800/50 px-2.5 py-1 rounded-lg">VIP</span>
                         </div>
 
-                        <div>
-                            <label class="block text-xs font-medium text-brandMuted mb-1.5">Correo Asignado</label>
-                            <input type="email" id="inputEmail" required placeholder="tu-cuenta@dominio.com" class="w-full bg-brandBg border border-brandBorder rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-brandPrimary transition font-mono">
+                        <form id="extractionForm" class="space-y-5">
+                            <div>
+                                <label class="block text-xs font-medium text-brandMuted mb-1.5">Plataforma / Servicio Digital</label>
+                                <select id="selectPlatform" required class="w-full bg-brandBg border border-brandBorder rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-brandPrimary transition cursor-pointer">
+                                    <option value="" disabled selected>Cargando plataformas...</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-medium text-brandMuted mb-1.5">Correo Asignado</label>
+                                <input type="email" id="inputEmail" required placeholder="tu-cuenta@dominio.com" class="w-full bg-brandBg border border-brandBorder rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-brandPrimary transition font-mono">
+                            </div>
+
+                            <button type="submit" id="btnExtract" class="w-full bg-gradient-to-r from-brandPrimary to-brandAccent hover:from-brandPrimaryHover hover:to-brandPrimary text-white font-bold py-3.5 rounded-xl text-sm transition duration-150 shadow-lg shadow-indigo-900/40 flex items-center justify-center space-x-2">
+                                <span>🔍 Buscar Código Ahora</span>
+                            </button>
+                        </form>
+
+                        <!-- Caja de Resultado del Código Extraído -->
+                        <div id="resultCard" class="mt-6 hidden bg-brandBg border border-brandBorder rounded-xl p-5 text-center space-y-3 relative overflow-hidden">
+                            <span class="text-xs text-brandMuted block">Código de Verificación Obtenido:</span>
+                            <div id="extractedCodeText" class="text-4xl font-extrabold font-mono tracking-widest text-brandAccent select-all py-1">------</div>
+                            <div class="text-[11px] text-brandMuted flex items-center justify-center space-x-1" id="extractedMeta">
+                                <!-- Metadatos de expiración / tiempo -->
+                            </div>
+                            <button id="btnCopyCode" class="w-full bg-brandBorder hover:bg-slate-800 text-white text-xs font-semibold py-2.5 rounded-lg transition border border-gray-700 flex items-center justify-center space-x-1.5">
+                                <span>📋 Copiar al Portapapeles</span>
+                            </button>
                         </div>
 
-                        <button type="submit" id="btnExtract" class="w-full bg-gradient-to-r from-brandPrimary to-brandAccent hover:from-brandPrimaryHover hover:to-brandPrimary text-white font-bold py-3.5 rounded-xl text-sm transition duration-150 shadow-lg shadow-indigo-900/40 flex items-center justify-center space-x-2">
-                            <span>🔍 Buscar Código Ahora</span>
-                        </button>
-                    </form>
-
-                    <!-- Caja de Resultado del Código Extraído -->
-                    <div id="resultCard" class="mt-6 hidden bg-brandBg border border-brandBorder rounded-xl p-5 text-center space-y-3 relative overflow-hidden">
-                        <span class="text-xs text-brandMuted block">Código de Verificación Obtenido:</span>
-                        <div id="extractedCodeText" class="text-4xl font-extrabold font-mono tracking-widest text-brandAccent select-all py-1">------</div>
-                        <div class="text-[11px] text-brandMuted flex items-center justify-center space-x-1" id="extractedMeta">
-                            <!-- Metadatos de expiración / tiempo -->
-                        </div>
-                        <button id="btnCopyCode" class="w-full bg-brandBorder hover:bg-slate-800 text-white text-xs font-semibold py-2.5 rounded-lg transition border border-gray-700 flex items-center justify-center space-x-1.5">
-                            <span>📋 Copiar al Portapapeles</span>
-                        </button>
+                        <div id="extractionAlert" class="mt-4 hidden p-3.5 rounded-xl text-xs"></div>
                     </div>
 
-                    <div id="extractionAlert" class="mt-4 hidden p-3.5 rounded-xl text-xs"></div>
                 </div>
 
             </div>
@@ -227,6 +242,9 @@
         </div>
 
     </main>
+
+    <!-- BACKDROP / OVERLAY MÓVIL PARA CUANDO SE ABRE EL MODAL DE LOGIN EN PANTALLAS PEQUEÑAS -->
+    <div id="mobileModalBackdrop" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 hidden lg:hidden"></div>
 
     <!-- Footer -->
     <footer class="px-6 py-4 text-center text-xs text-brandMuted border-t border-brandBorder/50 mt-12">
