@@ -91,8 +91,8 @@ function openMobileModal() {
     const col = document.getElementById('rightLoginColumn');
     const backdrop = document.getElementById('mobileModalBackdrop');
     if (col) {
-        col.classList.remove('hidden');
-        col.classList.add('fixed', 'inset-x-4', 'top-16', 'z-50', 'max-w-md', 'mx-auto');
+        col.classList.remove('hidden', 'sticky', 'top-24');
+        col.classList.add('fixed', 'inset-x-4', 'top-16', 'z-50', 'max-w-md', 'mx-auto', 'block');
     }
     if (backdrop) backdrop.classList.remove('hidden');
 }
@@ -102,7 +102,8 @@ function closeMobileModal() {
     const backdrop = document.getElementById('mobileModalBackdrop');
     if (col && window.innerWidth < 1024) {
         col.classList.add('hidden');
-        col.classList.remove('fixed', 'inset-x-4', 'top-16', 'z-50');
+        col.classList.remove('fixed', 'inset-x-4', 'top-16', 'z-50', 'block');
+        col.classList.add('sticky', 'top-24');
     }
     if (backdrop) backdrop.classList.add('hidden');
 }
