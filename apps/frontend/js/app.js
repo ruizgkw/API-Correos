@@ -68,6 +68,10 @@ function showAuthSection() {
     document.getElementById('authSection').classList.remove('hidden');
     document.getElementById('extractionSection').classList.add('hidden');
     document.getElementById('userBadge').classList.add('hidden');
+    const hero = document.getElementById('heroSection');
+    const mockups = document.getElementById('mockupSection');
+    if (hero) hero.classList.remove('hidden');
+    if (mockups) mockups.classList.remove('hidden');
 }
 
 function showExtractionSection(chatId) {
@@ -75,6 +79,10 @@ function showExtractionSection(chatId) {
     document.getElementById('extractionSection').classList.remove('hidden');
     document.getElementById('userBadge').classList.remove('hidden');
     document.getElementById('chatIdSpan').innerText = `ID: ${chatId}`;
+    const hero = document.getElementById('heroSection');
+    const mockups = document.getElementById('mockupSection');
+    if (hero) hero.classList.add('hidden');
+    if (mockups) mockups.classList.add('hidden');
 }
 
 async function requestOtp(chatId) {

@@ -21,11 +21,11 @@ async def request_otp(body: OTPRequest, db: AsyncSession = Depends(get_db)):
     result = await db.execute(stmt)
     user = result.scalar_one_or_none()
 
-    if not user:
-        # Para desarrollo o registro inicial auto-crearemos el usuario si no existe
-        user = User(telegram_chat_id=body.telegram_chat_id, is_active=True)
-        db.add(user)
-        await db.commit()
+    if not user or not user.is_approved:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Cuenta no autorizada. Contacta al administrador para solicitar acceso a la plataforma."
+        )
 
     if not user.is_active:
         raise HTTPException(

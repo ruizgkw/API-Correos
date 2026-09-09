@@ -5,17 +5,21 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initAdminApp() {
-    const adminToken = localStorage.getItem('admin_access_token');
-    const adminUsername = localStorage.getItem('admin_username');
+    checkAdminSession();
+    setupAdminEventListeners();
+}
 
-    if (adminToken && adminUsername) {
-        showDashboard(adminUsername);
+function checkAdminSession() {
+    const token = localStorage.getItem('admin_access_token');
+    const username = localStorage.getItem('admin_username');
+
+    if (token && username) {
+        showDashboard(username);
         loadMailAccounts();
+        loadClients();
     } else {
         showAdminAuth();
     }
-
-    setupAdminEventListeners();
 }
 
 function setupAdminEventListeners() {
@@ -183,6 +187,7 @@ async function adminVerify2FA(username, otpCode) {
             localStorage.setItem('admin_username', username);
             showDashboard(username);
             loadMailAccounts();
+            loadClients();
         } else {
             showAdminAlert('adminAuthAlert', data.detail || 'Código 2FA incorrecto o expirado.', 'error');
         }
@@ -381,4 +386,98 @@ async function connectOAuth(provider) {
         alert('Error al conectar con el servidor.');
     }
 }
+
+// --- Funciones de Gestión de Lista Blanca de Clientes VIP ---
+
+async function loadClients() {
+    const tbody = document.getElementById('clientsTableBody');
+    if (!tbody) return;
+    const token = localStorage.getItem('admin_access_token');
+
+    try {
+        const res = await fetch(`${API_BASE}/admin/clients`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const clients = await res.json();
+
+        tbody.innerHTML = '';
+        if (!clients || clients.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-brandMuted">No hay clientes autorizados en la lista blanca.</td></tr>`;
+            return;
+        }
+
+        clients.forEach(client => {
+            const tr = document.createElement('tr');
+            tr.className = 'hover:bg-brandBg/50 transition';
+            const statusBadge = client.is_approved
+                ? `<span class="px-2.5 py-0.5 rounded-full text-xs bg-emerald-950 text-emerald-400 border border-emerald-800/50">✓ Autorizado VIP</span>`
+                : `<span class="px-2.5 py-0.5 rounded-full text-xs bg-rose-950 text-rose-400 border border-rose-800/50">✕ Revocado</span>`;
+
+            const dateStr = new Date(client.created_at).toLocaleDateString();
+
+            tr.innerHTML = `
+                <td class="p-4 font-mono font-bold text-white">${client.telegram_chat_id}</td>
+                <td class="p-4">${statusBadge}</td>
+                <td class="p-4 font-mono text-brandMuted text-xs">${dateStr}</td>
+                <td class="p-4 text-right">
+                    <button onclick="toggleClientApproval(${client.telegram_chat_id}, ${!client.is_approved})" class="px-3 py-1.5 ${client.is_approved ? 'bg-rose-950/40 hover:bg-rose-900/60 text-rose-400 border-rose-800/50' : 'bg-emerald-950/40 hover:bg-emerald-900/60 text-emerald-400 border-emerald-800/50'} text-xs rounded-xl border transition font-medium">
+                        ${client.is_approved ? '🚫 Revocar' : '✅ Autorizar'}
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-rose-400">Error cargando clientes.</td></tr>`;
+    }
+}
+
+function openAuthorizeClientModal() {
+    document.getElementById('authClientChatId').value = '';
+    document.getElementById('authClientApproved').value = 'true';
+    document.getElementById('authorizeClientModal').classList.remove('hidden');
+}
+
+function closeAuthorizeClientModal() {
+    document.getElementById('authorizeClientModal').classList.add('hidden');
+}
+
+async function toggleClientApproval(chatId, approveState) {
+    const token = localStorage.getItem('admin_access_token');
+    try {
+        const res = await fetch(`${API_BASE}/admin/clients/authorize`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                telegram_chat_id: parseInt(chatId),
+                is_approved: approveState
+            })
+        });
+
+        if (res.ok) {
+            loadClients();
+        } else {
+            const data = await res.json();
+            alert(`Error: ${data.detail || 'No se pudo cambiar el estado.'}`);
+        }
+    } catch (err) {
+        alert('Error al conectar con el servidor.');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const authForm = document.getElementById('authorizeClientForm');
+    if (authForm) {
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const chatId = document.getElementById('authClientChatId').value;
+            const approved = document.getElementById('authClientApproved').value === 'true';
+            await toggleClientApproval(chatId, approved);
+            closeAuthorizeClientModal();
+        });
+    }
+});
 

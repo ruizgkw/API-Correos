@@ -43,6 +43,7 @@ class User(Base):
     hashed_password = Column(String(255), nullable=True)
     role = Column(SQLEnum(UserRole), nullable=False, default=UserRole.CLIENT)
     is_active = Column(Boolean, default=True, nullable=False)
+    is_approved = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     logs = relationship("ExtractionLog", back_populates="user", cascade="all, delete-orphan")

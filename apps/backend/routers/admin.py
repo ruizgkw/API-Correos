@@ -9,7 +9,7 @@ from database import get_db
 from models import User, UserRole, MailAccount, MailProvider, AuthType
 from schemas import (
     AdminRegisterRequest, AdminLoginPassRequest, Admin2FAVerifyRequest, TokenResponse, APIResponse,
-    MailAccountCreateRequest, MailAccountUpdateRequest, MailAccountResponse, ClientUserResponse
+    MailAccountCreateRequest, MailAccountUpdateRequest, MailAccountResponse, ClientUserResponse, ClientApproveRequest
 )
 
 
@@ -513,7 +513,41 @@ async def list_clients(
             id=str(c.id),
             telegram_chat_id=c.telegram_chat_id,
             is_active=c.is_active,
+            is_approved=c.is_approved,
             created_at=c.created_at.isoformat()
         )
         for c in clients
     ]
+
+@router.post("/clients/authorize", response_model=ClientUserResponse)
+async def authorize_client(
+    body: ClientApproveRequest,
+    admin: User = Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db)
+):
+    """Agrega o actualiza la autorización (Lista Blanca) de un Telegram Chat ID de cliente."""
+    stmt = select(User).where(User.telegram_chat_id == body.telegram_chat_id)
+    result = await db.execute(stmt)
+    user = result.scalar_one_or_none()
+
+    if not user:
+        user = User(
+            telegram_chat_id=body.telegram_chat_id,
+            role=UserRole.CLIENT,
+            is_active=True,
+            is_approved=body.is_approved
+        )
+        db.add(user)
+    else:
+        user.is_approved = body.is_approved
+
+    await db.commit()
+    await db.refresh(user)
+
+    return ClientUserResponse(
+        id=str(user.id),
+        telegram_chat_id=user.telegram_chat_id,
+        is_active=user.is_active,
+        is_approved=user.is_approved,
+        created_at=user.created_at.isoformat()
+    )

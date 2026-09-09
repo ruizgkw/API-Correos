@@ -149,6 +149,33 @@
                 </table>
             </div>
 
+            <!-- SECCIÓN LISTA BLANCA DE CLIENTES (AUTORIZACIÓN VIP) -->
+            <div class="flex justify-between items-center bg-brandCard border border-brandBorder p-5 rounded-2xl shadow-lg mt-8">
+                <div>
+                    <h2 class="text-base font-bold text-white">Lista Blanca de Clientes VIP</h2>
+                    <p class="text-xs text-brandMuted">Autoriza Telegram Chat IDs para permitirles solicitar códigos de verificación.</p>
+                </div>
+                <button onclick="openAuthorizeClientModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-4 py-2.5 rounded-xl font-medium transition shadow-lg shadow-emerald-900/30 flex items-center space-x-1.5">
+                    <span>+ Autorizar Nuevo Cliente</span>
+                </button>
+            </div>
+
+            <div class="bg-brandCard border border-brandBorder rounded-2xl overflow-hidden shadow-xl">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-brandBg border-b border-brandBorder text-brandMuted uppercase font-mono">
+                        <tr>
+                            <th class="p-4">Telegram Chat ID</th>
+                            <th class="p-4">Estado de Acceso</th>
+                            <th class="p-4">Fecha de Registro</th>
+                            <th class="p-4 text-right">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clientsTableBody" class="divide-y divide-brandBorder">
+                        <!-- Filas cargadas por JS -->
+                    </tbody>
+                </table>
+            </div>
+
             <!-- Modal Agregar / Editar Cuenta -->
             <div id="addMailModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
                 <div class="bg-brandCard border border-brandBorder rounded-2xl p-6 w-full max-w-md shadow-2xl">
@@ -194,6 +221,30 @@
                         <div class="flex justify-end space-x-3 pt-4 border-t border-brandBorder">
                             <button type="button" id="btnCloseModal" class="px-4 py-2 bg-brandBg hover:bg-brandBorder text-xs text-white rounded-xl border border-brandBorder">Cancelar</button>
                             <button type="submit" class="px-4 py-2 bg-brandPrimary hover:bg-brandPrimaryHover text-xs text-white font-medium rounded-xl shadow-lg shadow-indigo-900/30">Guardar y Cifrar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Modal Autorizar Cliente VIP -->
+            <div id="authorizeClientModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+                <div class="bg-brandCard border border-brandBorder rounded-2xl p-6 w-full max-w-md shadow-2xl">
+                    <h3 class="text-base font-bold text-white mb-4">Autorizar Cliente VIP (Lista Blanca)</h3>
+                    <form id="authorizeClientForm" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-medium text-brandMuted mb-1">Telegram Chat ID del Cliente</label>
+                            <input type="number" id="authClientChatId" required placeholder="Ej. 123456789" class="w-full bg-brandBg border border-brandBorder rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-brandPrimary font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-brandMuted mb-1">Estado de Autorización</label>
+                            <select id="authClientApproved" class="w-full bg-brandBg border border-brandBorder rounded-xl px-3 py-2.5 text-xs text-white">
+                                <option value="true">✓ Autorizado (Permitir pedir OTP)</option>
+                                <option value="false">✕ Revocado (Bloquear acceso)</option>
+                            </select>
+                        </div>
+                        <div class="flex justify-end space-x-3 pt-4 border-t border-brandBorder">
+                            <button type="button" onclick="closeAuthorizeClientModal()" class="px-4 py-2 bg-brandBg hover:bg-brandBorder text-xs text-white rounded-xl border border-brandBorder">Cancelar</button>
+                            <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-xs text-white font-medium rounded-xl shadow-lg shadow-emerald-900/30">Guardar Autorización</button>
                         </div>
                     </form>
                 </div>

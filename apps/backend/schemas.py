@@ -79,6 +79,11 @@ class ClientUserResponse(BaseModel):
     id: str
     telegram_chat_id: int
     is_active: bool
+    is_approved: bool
     created_at: str
+
+class ClientApproveRequest(BaseModel):
+    telegram_chat_id: int = Field(..., description="Telegram Chat ID del cliente a autorizar")
+    is_approved: bool = Field(True, description="Estado de autorización")
 
 
