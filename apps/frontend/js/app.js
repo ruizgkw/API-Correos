@@ -91,8 +91,9 @@ function openMobileModal() {
     const col = document.getElementById('rightLoginColumn');
     const backdrop = document.getElementById('mobileModalBackdrop');
     if (col) {
+        col.style.display = 'block';
         col.classList.remove('hidden', 'sticky', 'top-24');
-        col.classList.add('fixed', 'inset-x-4', 'top-16', 'z-50', 'max-w-md', 'mx-auto', 'block');
+        col.classList.add('fixed', 'inset-x-4', 'top-16', 'z-50', 'max-w-md', 'mx-auto');
     }
     if (backdrop) backdrop.classList.remove('hidden');
 }
@@ -101,8 +102,9 @@ function closeMobileModal() {
     const col = document.getElementById('rightLoginColumn');
     const backdrop = document.getElementById('mobileModalBackdrop');
     if (col && window.innerWidth < 1024) {
+        col.style.display = 'none';
         col.classList.add('hidden');
-        col.classList.remove('fixed', 'inset-x-4', 'top-16', 'z-50', 'block');
+        col.classList.remove('fixed', 'inset-x-4', 'top-16', 'z-50');
         col.classList.add('sticky', 'top-24');
     }
     if (backdrop) backdrop.classList.add('hidden');
@@ -125,6 +127,7 @@ function showExtractionSection(chatId) {
     // Al autenticar, asegurarse de que se muestre en móvil si está en modal
     const rightCol = document.getElementById('rightLoginColumn');
     if (rightCol && window.innerWidth < 1024) {
+        rightCol.style.display = 'block';
         rightCol.classList.remove('hidden');
     }
 }
