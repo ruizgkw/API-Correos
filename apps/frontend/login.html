@@ -45,10 +45,10 @@
     </header>
 
     <!-- Main Content (Layout Dividido Estilo Facebook) -->
-    <main class="flex-grow flex items-center justify-center p-4 md:p-8 max-w-7xl mx-auto w-full">
+    <main class="flex-grow flex items-start justify-center p-4 md:p-8 max-w-7xl mx-auto w-full">
 
-        <!-- CONTENEDOR DIVIDIDO EN 2 COLUMNAS (Estilo Facebook Centrado) -->
-        <div id="splitLandingContainer" class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 lg:items-center items-start w-full">
+        <!-- CONTENEDOR DIVIDIDO EN 2 COLUMNAS (Estilo Facebook - Scroll Izquierdo / Fijo Derecho) -->
+        <div id="splitLandingContainer" class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start w-full">
             
             <!-- COLUMNA IZQUIERDA: TUTORIAL PASO A PASO EN MOCKUPS PARA EL CLIENTE (7 / 12) -->
             <div id="leftBrandColumn" class="lg:col-span-7 space-y-8 text-left">
@@ -138,8 +138,8 @@
                 </div>
             </div>
 
-            <!-- COLUMNA DERECHA: CAJA DE INICIO DE SESIÓN CENTRADA (5 / 12) -->
-            <div id="rightLoginColumn" class="lg:col-span-5 w-full max-w-md mx-auto lg:ml-auto self-center sticky top-28 py-6">
+            <!-- COLUMNA DERECHA: CAJA DE INICIO DE SESIÓN ESTÁTICA / STICKY (5 / 12) -->
+            <div id="rightLoginColumn" class="lg:col-span-5 w-full max-w-md mx-auto lg:ml-auto sticky top-6">
                 
                 <!-- SECCIÓN DE AUTENTICACIÓN TELEGRAM (LOGIN FORM) -->
                 <div id="authSection" class="w-full bg-brandCard border border-brandBorder rounded-2xl p-8 shadow-2xl relative">
