@@ -16,7 +16,8 @@ Plataforma Web & API orientada a servicios de automatización para la extracció
 * **Nombre de Marca:** **EAcodigos** *(Extractor Autónomo de Códigos)*.
 * **Tema Visual:** *"Midnight Indigo"* (Obsidian `#0B0F19`, Indigo `#6366F1`, Violet `#818CF8`).
 * **Puerto de Servicio Local:** `http://localhost:8990`
-* **Landing Page & Portal de Clientes (SPA):** `http://localhost:8990/`
+* **Landing Page Comercial:** `http://localhost:8990/`
+* **Portal de Clientes VIP:** `http://localhost:8990/login`
 * **Portal Administrativo (SPA):** `http://localhost:8990/admin`
 * **Documentación API (OpenAPI/Swagger):** `http://localhost:8990/docs`
 
@@ -98,7 +99,7 @@ REDIS_URL=redis://redis:6379/0
 
 SECRET_KEY=TU_LLAVE_SECRETA_JWT_AQUI
 FERNET_KEY=TU_LLAVE_FERNET_AES256_BASE64_AQUI
-TELEGRAM_BOT_TOKEN=8877489458:AAGG9NfB3T9vOtAAIs0EV5JgHBaGXVrmgbg
+TELEGRAM_BOT_TOKEN=TU_TELEGRAM_BOT_TOKEN_AQUI
 ```
 
 ### 3. Levantar los contenedores Docker
