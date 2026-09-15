@@ -159,41 +159,81 @@
                     </button>
 
                     <!-- SECCIÓN DE AUTENTICACIÓN TELEGRAM (LOGIN FORM) -->
-                    <div id="authSection" class="w-full">
-                        <div class="text-center mb-6">
-                            <div class="inline-flex p-3 bg-brandBg border border-brandBorder rounded-2xl mb-3 shadow-inner">
+                    <div id="authSection" class="w-full space-y-6">
+                        <!-- Encabezado Cálido y Profesional -->
+                        <div class="text-center space-y-2">
+                            <div class="inline-flex p-3 bg-brandBg border border-brandBorder rounded-2xl shadow-inner">
                                 <img src="/favicon.svg" class="w-8 h-8">
                             </div>
-                            <h2 class="text-xl font-bold text-white tracking-tight">Acceso a Clientes</h2>
-                            <p class="text-xs text-brandMuted mt-1">Ingresa tu Telegram Chat ID para recibir el OTP.</p>
+                            <div class="space-y-1">
+                                <div class="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-emerald-950/70 border border-emerald-800/50 text-[10px] font-mono text-emerald-400">
+                                    <span>●</span>
+                                    <span>Acceso Seguro VIP</span>
+                                </div>
+                                <h2 class="text-2xl font-extrabold text-white tracking-tight">¡Bienvenido!</h2>
+                                <p class="text-xs text-brandMuted max-w-xs mx-auto">Inicia sesión para consultar los códigos de verificación de tus plataformas.</p>
+                            </div>
+                        </div>
+
+                        <!-- Opciones de Inicio de Sesión -->
+                        <div class="space-y-3">
+                            <span class="text-[11px] font-semibold text-brandMuted uppercase tracking-wider block font-mono">Opciones de Inicio de Sesión</span>
+                            
+                            <!-- Opción A: Telegram Bot OTP (Activo / Seleccionado) -->
+                            <div class="p-3.5 bg-brandBg border-2 border-brandPrimary/70 rounded-xl space-y-2 shadow-lg shadow-indigo-950/30">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-2.5">
+                                        <div class="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400 text-lg">
+                                            ✈️
+                                        </div>
+                                        <div>
+                                            <span class="text-xs font-bold text-white block">Acceso con Telegram</span>
+                                            <span class="text-[10px] text-brandMuted">Código OTP de 6 dígitos</span>
+                                        </div>
+                                    </div>
+                                    <span class="text-[10px] bg-brandPrimary/20 text-brandAccent border border-brandPrimary/40 px-2 py-0.5 rounded font-mono font-medium">Recomendado</span>
+                                </div>
+                                <p class="text-[11px] text-brandMuted leading-relaxed pt-1 border-t border-brandBorder/50">
+                                    Ingresa tu Telegram Chat ID para enviarte un código de acceso único directamente a tu chat.
+                                </p>
+                            </div>
                         </div>
 
                         <!-- Paso A: Solicitar OTP -->
                         <form id="requestOtpForm" class="space-y-4">
                             <div>
-                                <label class="block text-xs font-medium text-brandMuted mb-1">Telegram Chat ID Autorizado</label>
+                                <div class="flex justify-between items-center mb-1.5">
+                                    <label class="block text-xs font-medium text-brandMuted">Tu Telegram Chat ID Autorizado</label>
+                                    <a href="https://t.me/userinfobot" target="_blank" rel="noopener noreferrer" class="text-[10px] text-brandAccent hover:underline flex items-center space-x-0.5">
+                                        <span>¿No sabes tu ID?</span>
+                                    </a>
+                                </div>
                                 <input type="number" id="inputChatId" required placeholder="Ej. 123456789" class="w-full bg-brandBg border border-brandBorder rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brandPrimary text-white font-mono transition">
                             </div>
-                            <button type="submit" id="btnSendOtp" class="w-full bg-brandPrimary hover:bg-brandPrimaryHover text-white font-semibold py-3.5 rounded-xl text-sm transition duration-150 shadow-lg shadow-indigo-900/30 flex items-center justify-center">
-                                <span>Enviar Código a Telegram</span>
+                            <button type="submit" id="btnSendOtp" class="w-full bg-gradient-to-r from-brandPrimary to-brandAccent hover:from-brandPrimaryHover hover:to-brandPrimary text-white font-bold py-3.5 rounded-xl text-sm transition duration-150 shadow-lg shadow-indigo-900/40 flex items-center justify-center space-x-2 cursor-pointer">
+                                <span>🚀 Enviar Código a Telegram</span>
                             </button>
                         </form>
 
                         <!-- Paso B: Verificar OTP (Oculto inicialmente) -->
-                        <form id="verifyOtpForm" class="space-y-4 hidden mt-4">
-                            <div class="p-3 bg-indigo-950/40 border border-indigo-800/50 rounded-xl text-xs text-brandAccent mb-2">
-                                Código enviado a Telegram. Expira en 5 minutos.
+                        <form id="verifyOtpForm" class="space-y-4 hidden">
+                            <div class="p-3 bg-indigo-950/40 border border-indigo-800/50 rounded-xl text-xs text-brandAccent space-y-1">
+                                <div class="font-semibold flex items-center space-x-1.5">
+                                    <span>📩</span>
+                                    <span>¡Código enviado con éxito!</span>
+                                </div>
+                                <p class="text-[11px] text-brandMuted">Revisa tu chat en Telegram e ingresa el código numérico de 6 dígitos. Expira en 5 minutos.</p>
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-brandMuted mb-1">Código OTP (6 dígitos)</label>
-                                <input type="text" id="inputOtp" required maxlength="6" placeholder="123456" class="w-full bg-brandBg border border-brandBorder rounded-xl px-4 py-3 text-center text-xl tracking-widest font-mono text-white focus:outline-none focus:border-brandPrimary">
+                                <label class="block text-xs font-medium text-brandMuted mb-1.5">Código OTP de 6 dígitos</label>
+                                <input type="text" id="inputOtp" required maxlength="6" placeholder="123456" class="w-full bg-brandBg border border-brandBorder rounded-xl px-4 py-3 text-center text-2xl tracking-widest font-mono text-white focus:outline-none focus:border-brandPrimary">
                             </div>
-                            <button type="submit" id="btnVerifyOtp" class="w-full bg-brandAccent hover:bg-indigo-400 text-brandBg font-bold py-3 rounded-xl text-sm transition duration-150">
-                                Verificar e Ingresar
+                            <button type="submit" id="btnVerifyOtp" class="w-full bg-gradient-to-r from-brandPrimary via-brandAccent to-purple-500 hover:from-brandPrimaryHover hover:to-brandPrimary text-white font-bold py-3.5 rounded-xl text-sm transition duration-150 shadow-lg shadow-indigo-900/40 cursor-pointer">
+                                Verificar e Ingresar al Sistema
                             </button>
                         </form>
                         
-                        <div id="authAlert" class="mt-4 hidden p-3.5 rounded-xl text-xs"></div>
+                        <div id="authAlert" class="hidden p-3.5 rounded-xl text-xs"></div>
                     </div>
 
                 </div>
