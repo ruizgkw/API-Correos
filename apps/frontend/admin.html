@@ -30,15 +30,20 @@
 
     <!-- Header Admin Midnight Style -->
     <header class="border-b border-brandBorder bg-brandCard/90 backdrop-blur-md px-6 py-4 flex justify-between items-center sticky top-0 z-40">
-        <div class="flex items-center space-x-3">
+        <a href="/" class="flex items-center space-x-3 hover:opacity-90 transition">
             <img src="/favicon.svg" alt="Logo" class="w-8 h-8">
             <span class="font-bold text-lg text-white">Panel Administrador</span>
             <span class="bg-indigo-950 text-brandAccent text-xs px-3 py-0.5 rounded-full border border-indigo-800/50 font-mono">2FA PROTECTED</span>
-        </div>
-        <div id="adminBadge" class="hidden flex items-center space-x-4">
-            <span class="text-xs text-brandMuted font-mono" id="adminUserSpan"></span>
-            <a href="/" class="text-xs text-brandAccent hover:underline">Vista Cliente</a>
-            <button id="adminLogoutBtn" class="text-xs text-rose-400 hover:underline">Cerrar Sesión</button>
+        </a>
+        <div class="flex items-center space-x-4">
+            <!-- Botón Volver / Atrás inteligente -->
+            <button id="adminBackBtn" onclick="if(document.referrer && document.referrer.indexOf(window.location.host) !== -1) { history.back(); } else { window.location.href = '/'; }" class="text-xs bg-brandCard border border-brandBorder hover:bg-brandBorder text-brandText px-3 py-1.5 rounded-xl font-medium transition flex items-center space-x-1 shadow">
+                <span>← Volver</span>
+            </button>
+            <div id="adminBadge" class="hidden flex items-center space-x-4">
+                <span class="text-xs text-brandMuted font-mono" id="adminUserSpan"></span>
+                <button id="adminLogoutBtn" class="text-xs text-rose-400 hover:underline">Cerrar Sesión</button>
+            </div>
         </div>
     </header>
 
@@ -54,7 +59,7 @@
 
             <div class="flex border-b border-brandBorder mb-5 text-xs font-medium">
                 <button id="tabLogin" class="flex-1 py-2 text-center text-brandAccent border-b-2 border-brandAccent font-semibold">Iniciar Sesión</button>
-                <button id="tabRegister" class="flex-1 py-2 text-center text-brandMuted hover:text-white">Registrar Admin</button>
+                <button id="tabRegister" class="flex-1 py-2 text-center text-brandMuted hover:text-white">Registrarse</button>
             </div>
 
             <!-- Paso 1: Usuario y Password (Login) -->
@@ -113,12 +118,13 @@
         <div id="adminDashboard" class="hidden space-y-8">
             
             <!-- Controles Superiores -->
-            <div class="flex justify-between items-center bg-brandCard border border-brandBorder p-5 rounded-2xl shadow-lg">
+            <!-- Controles Superiores -->
+            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-brandCard border border-brandBorder p-5 rounded-2xl shadow-lg">
                 <div>
                     <h2 class="text-base font-bold text-white">Gestión de Cuentas de Correo</h2>
                     <p class="text-xs text-brandMuted">Configura cuentas IMAP tradicionales o vincúlalas vía OAuth2 de 1 Clic.</p>
                 </div>
-                <div class="flex items-center space-x-2">
+                <div class="flex flex-wrap items-center gap-2">
                     <button onclick="connectOAuth('MICROSOFT')" class="bg-blue-600 hover:bg-blue-500 text-white text-xs px-3.5 py-2.5 rounded-xl font-medium transition shadow-lg shadow-blue-900/30 flex items-center space-x-1.5">
                         <span>🔑 Conectar Hotmail/Outlook (OAuth2)</span>
                     </button>
@@ -132,8 +138,8 @@
             </div>
 
             <!-- Tabla de Cuentas de Correo Midnight Style -->
-            <div class="bg-brandCard border border-brandBorder rounded-2xl overflow-hidden shadow-xl">
-                <table class="w-full text-left text-xs">
+            <div class="bg-brandCard border border-brandBorder rounded-2xl overflow-x-auto shadow-xl">
+                <table class="w-full text-left text-xs min-w-[600px]">
                     <thead class="bg-brandBg border-b border-brandBorder text-brandMuted uppercase font-mono">
                         <tr>
                             <th class="p-4">Correo</th>
@@ -150,7 +156,7 @@
             </div>
 
             <!-- SECCIÓN LISTA BLANCA DE CLIENTES (AUTORIZACIÓN VIP) -->
-            <div class="flex justify-between items-center bg-brandCard border border-brandBorder p-5 rounded-2xl shadow-lg mt-8">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-brandCard border border-brandBorder p-5 rounded-2xl shadow-lg mt-8">
                 <div>
                     <h2 class="text-base font-bold text-white">Lista Blanca de Clientes VIP</h2>
                     <p class="text-xs text-brandMuted">Autoriza Telegram Chat IDs para permitirles solicitar códigos de verificación.</p>
@@ -160,8 +166,8 @@
                 </button>
             </div>
 
-            <div class="bg-brandCard border border-brandBorder rounded-2xl overflow-hidden shadow-xl">
-                <table class="w-full text-left text-xs">
+            <div class="bg-brandCard border border-brandBorder rounded-2xl overflow-x-auto shadow-xl">
+                <table class="w-full text-left text-xs min-w-[500px]">
                     <thead class="bg-brandBg border-b border-brandBorder text-brandMuted uppercase font-mono">
                         <tr>
                             <th class="p-4">Telegram Chat ID</th>

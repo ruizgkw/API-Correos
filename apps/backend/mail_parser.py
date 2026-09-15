@@ -99,26 +99,32 @@ class MailParser:
                         "raw_subject": email_data.get("subject")
                     }
 
-            # 4. Rescate final: cualquier grupo de 6 dígitos en la cadena limpia
-            clean_digits_only = re.sub(r'\D', '', clean_text_from_html)
-            if len(clean_digits_only) >= 6:
-                # Extraer los primeros 6 dígitos encontrados
-                first_6_digits = clean_digits_only[:6]
+            # 3. Búsqueda contextual: palabra clave (código/code/pin/verificación) seguida de dígitos
+            context_match = re.search(r'(?:c[oó]digo|code|pin|verificaci[oó]n|password|clave)[\s\:\.\-]+([0-9\s]{4,10})', full_text, re.IGNORECASE)
+            if context_match:
+                candidate = re.sub(r'\s+', '', context_match.group(1))
+                if 4 <= len(candidate) <= 8 and candidate.isdigit():
+                    return {
+                        "success": True,
+                        "extraction_type": "DIRECT_TEXT",
+                        "extracted_code": candidate,
+                        "extraction_url": None,
+                        "raw_subject": email_data.get("subject")
+                    }
+
+            # 4. Búsqueda de cualquier token numérico aislado de 4 a 8 dígitos
+            standalone_digits = re.findall(r'\b(\d{4,8})\b', full_text)
+            for candidate in standalone_digits:
+                # Evitar años recientes si son 4 dígitos
+                if len(candidate) == 4 and candidate in ["2024", "2025", "2026", "2027"]:
+                    continue
                 return {
                     "success": True,
                     "extraction_type": "DIRECT_TEXT",
-                    "extracted_code": first_6_digits,
+                    "extracted_code": candidate,
                     "extraction_url": None,
                     "raw_subject": email_data.get("subject")
                 }
-
-            return {
-                "success": False,
-                "error": "No se pudo localizar el código numérico en el cuerpo del correo."
-            }
-
-
-
 
             return {
                 "success": False,

@@ -32,19 +32,23 @@
 
     <!-- Header Midnight Style -->
     <header class="px-6 py-4 flex justify-between items-center z-40 max-w-7xl mx-auto w-full border-b border-brandBorder/50 sticky top-0 bg-brandBg/90 backdrop-blur-md">
-        <a href="/login" class="flex items-center space-x-3 hover:opacity-90 transition">
-            <img src="/favicon.svg" alt="Logo" class="w-8 h-8">
-            <span class="font-bold text-xl text-white tracking-wide">EAcodigos <span class="text-xs bg-brandBorder px-2.5 py-0.5 rounded-full text-brandAccent font-mono">v1.0 VIP</span></span>
-        </a>
         <div class="flex items-center space-x-3">
+            <img src="/favicon.svg" alt="Logo" class="w-8 h-8">
+            <div class="flex flex-col">
+                <span class="font-bold text-xl text-white tracking-wide leading-none">EAcodigos</span>
+                <span class="text-[10px] text-brandAccent font-mono mt-0.5">Portal Cliente VIP</span>
+            </div>
+        </div>
+        <div class="flex items-center space-x-4">
+
             <div id="userBadge" class="hidden flex items-center space-x-3">
                 <span class="text-xs text-brandMuted font-mono" id="chatIdSpan"></span>
                 <button id="logoutBtn" class="text-xs text-rose-400 hover:underline font-medium">Cerrar Sesión</button>
             </div>
 
             <!-- BOTÓN MÓVIL ESTÁTICO PARA ABRIR LOGIN -->
-            <button id="mobileLoginToggleBtn" class="lg:hidden text-xs bg-gradient-to-r from-brandPrimary to-brandAccent hover:from-brandPrimaryHover hover:to-brandPrimary text-white px-3.5 py-2 rounded-xl font-bold transition flex items-center space-x-1.5 shadow-lg shadow-indigo-900/40">
-                <span>🔑 Iniciar Sesión</span>
+            <button id="mobileLoginToggleBtn" class="lg:hidden text-xs bg-gradient-to-r from-brandPrimary to-brandAccent hover:from-brandPrimaryHover hover:to-brandPrimary text-white px-3 py-1.5 rounded-xl font-bold transition flex items-center space-x-1 shadow-lg shadow-indigo-900/40">
+                <span>🔑 Acceso</span>
             </button>
         </div>
     </header>
@@ -143,11 +147,11 @@
                 </div>
             </div>
 
-            <!-- COLUMNA DERECHA: CAJA DE INICIO DE SESIÓN / CÓDIGOS (EN MÓVIL SE PUEDE DESPLEGAR O MOSTRAR) -->
+            <!-- COLUMNA DERECHA: CAJA DE INICIO DE SESIÓN / CÓDIGOS (EN MÓVIL ES UN MODAL) -->
             <div id="rightLoginColumn" class="hidden lg:block lg:col-span-5 w-full max-w-md mx-auto lg:ml-auto sticky top-24 z-50">
                 
-                <!-- CONTAINER INTERNO QUE ALBERGA AUTH Y EXTRACTION -->
-                <div id="loginCardWrapper" class="w-full bg-brandCard border border-brandBorder rounded-2xl p-6 md:p-8 shadow-2xl relative">
+                <!-- CONTAINER INTERNO QUE ALBERGA AUTH Y EXTRACTION (CON SCROLL INTERNO PARA MÓVILES CORTOS) -->
+                <div id="loginCardWrapper" class="w-full bg-brandCard border border-brandBorder rounded-2xl p-5 md:p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto my-auto">
                     
                     <!-- BOTÓN CERRAR MODAL (Solo visible en móvil) -->
                     <button id="closeMobileModalBtn" class="lg:hidden absolute top-4 right-4 text-brandMuted hover:text-white p-1 rounded-lg bg-brandBg border border-brandBorder">
@@ -192,50 +196,87 @@
                         <div id="authAlert" class="mt-4 hidden p-3.5 rounded-xl text-xs"></div>
                     </div>
 
-                    <!-- SECCIÓN PRINCIPAL: CONSULTA DE CÓDIGOS (Reemplaza la caja de login al autenticar) -->
-                    <div id="extractionSection" class="w-full hidden">
-                        <div class="flex justify-between items-center border-b border-brandBorder pb-4 mb-6">
-                            <div>
-                                <h2 class="text-lg font-bold text-white">Extracción de Código</h2>
-                                <p class="text-xs text-brandMuted">Consulta tu código sin exponer tu correo.</p>
-                            </div>
-                            <span class="text-xs font-mono bg-emerald-950 text-emerald-400 border border-emerald-800/50 px-2.5 py-1 rounded-lg">VIP</span>
-                        </div>
+                </div>
 
-                        <form id="extractionForm" class="space-y-5">
-                            <div>
-                                <label class="block text-xs font-medium text-brandMuted mb-1.5">Plataforma / Servicio Digital</label>
-                                <select id="selectPlatform" required class="w-full bg-brandBg border border-brandBorder rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-brandPrimary transition cursor-pointer">
-                                    <option value="" disabled selected>Cargando plataformas...</option>
-                                </select>
-                            </div>
+            </div>
 
-                            <div>
-                                <label class="block text-xs font-medium text-brandMuted mb-1.5">Correo Asignado</label>
-                                <input type="email" id="inputEmail" required placeholder="tu-cuenta@dominio.com" class="w-full bg-brandBg border border-brandBorder rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-brandPrimary transition font-mono">
-                            </div>
+        </div>
 
-                            <button type="submit" id="btnExtract" class="w-full bg-gradient-to-r from-brandPrimary to-brandAccent hover:from-brandPrimaryHover hover:to-brandPrimary text-white font-bold py-3.5 rounded-xl text-sm transition duration-150 shadow-lg shadow-indigo-900/40 flex items-center justify-center space-x-2">
-                                <span>🔍 Buscar Código Ahora</span>
-                            </button>
-                        </form>
+        <!-- SECCIÓN PRINCIPAL DE USUARIO AUTENTICADO: SISTEMA DE EXTRACCIÓN (DASHBOARD CLIENTE) -->
+        <div id="clientDashboard" class="hidden w-full max-w-2xl mx-auto space-y-6">
+            
+            <!-- Banner / Header de Bienvenida al Sistema -->
+            <div class="bg-brandCard border border-brandBorder rounded-2xl p-6 shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div class="space-y-1">
+                    <div class="flex items-center space-x-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <h1 class="text-xl font-bold text-white tracking-tight">Extractor de Códigos Autónomo</h1>
+                    </div>
+                    <p class="text-xs text-brandMuted">Consulta tu código en tiempo real de forma segura y sin intermediarios.</p>
+                </div>
+                <div class="flex items-center space-x-2 bg-indigo-950/60 border border-indigo-800/50 px-3 py-1.5 rounded-xl">
+                    <span class="text-xs font-mono text-emerald-400 font-semibold">● Sesión Activa</span>
+                </div>
+            </div>
 
-                        <!-- Caja de Resultado del Código Extraído -->
-                        <div id="resultCard" class="mt-6 hidden bg-brandBg border border-brandBorder rounded-xl p-5 text-center space-y-3 relative overflow-hidden">
-                            <span class="text-xs text-brandMuted block">Código de Verificación Obtenido:</span>
-                            <div id="extractedCodeText" class="text-4xl font-extrabold font-mono tracking-widest text-brandAccent select-all py-1">------</div>
-                            <div class="text-[11px] text-brandMuted flex items-center justify-center space-x-1" id="extractedMeta">
-                                <!-- Metadatos de expiración / tiempo -->
-                            </div>
-                            <button id="btnCopyCode" class="w-full bg-brandBorder hover:bg-slate-800 text-white text-xs font-semibold py-2.5 rounded-lg transition border border-gray-700 flex items-center justify-center space-x-1.5">
-                                <span>📋 Copiar al Portapapeles</span>
-                            </button>
-                        </div>
+            <!-- Tarjeta Principal del Formulario de Extracción -->
+            <div class="bg-brandCard border border-brandBorder rounded-2xl p-6 md:p-8 shadow-2xl space-y-6">
+                
+                <div class="border-b border-brandBorder pb-4">
+                    <h2 class="text-base font-semibold text-white">Solicitud de Código</h2>
+                    <p class="text-xs text-brandMuted mt-0.5">Selecciona el servicio e ingresa el correo que te fue asignado.</p>
+                </div>
 
-                        <div id="extractionAlert" class="mt-4 hidden p-3.5 rounded-xl text-xs"></div>
+                <form id="extractionForm" class="space-y-5">
+                    <div>
+                        <label class="block text-xs font-medium text-brandMuted mb-2">Plataforma / Servicio Digital</label>
+                        <select id="selectPlatform" required class="w-full bg-brandBg border border-brandBorder rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-brandPrimary transition cursor-pointer">
+                            <option value="" disabled selected>Cargando plataformas...</option>
+                        </select>
                     </div>
 
+                    <div>
+                        <label class="block text-xs font-medium text-brandMuted mb-2">Correo Asignado</label>
+                        <input type="email" id="inputEmail" required placeholder="tu-cuenta@dominio.com" class="w-full bg-brandBg border border-brandBorder rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-brandPrimary transition font-mono">
+                    </div>
+
+                    <button type="submit" id="btnExtract" class="w-full bg-gradient-to-r from-brandPrimary via-brandAccent to-purple-500 hover:from-brandPrimaryHover hover:to-brandPrimary text-white font-bold py-4 rounded-xl text-sm transition duration-150 shadow-lg shadow-indigo-900/40 flex items-center justify-center space-x-2 cursor-pointer">
+                        <span id="btnExtractText">🔍 Buscar Código Ahora</span>
+                    </button>
+                </form>
+
+                <!-- Temporizador Cooldown (Oculto inicialmente) -->
+                <div id="cooldownContainer" class="hidden p-4 bg-brandBg border border-amber-500/40 rounded-xl space-y-2.5">
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="text-amber-400 font-medium flex items-center gap-1.5">
+                            <span>⏳</span> Espera requerida para nueva consulta (Cooldown):
+                        </span>
+                        <span id="cooldownTimerText" class="font-mono font-bold text-amber-300 text-sm">07:00</span>
+                    </div>
+                    <div class="w-full bg-gray-800 rounded-full h-2 overflow-hidden">
+                        <div id="cooldownProgressBar" class="bg-amber-500 h-full rounded-full transition-all duration-1000" style="width: 100%;"></div>
+                    </div>
+                    <p class="text-[11px] text-brandMuted">Por seguridad, el sistema previene peticiones continuas inmediatas hacia la bandeja del correo.</p>
                 </div>
+
+                <!-- Caja de Resultado del Código Extraído -->
+                <div id="resultCard" class="hidden bg-brandBg border border-indigo-800/60 rounded-2xl p-6 text-center space-y-4 relative overflow-hidden shadow-inner">
+                    <div class="flex justify-center">
+                        <div id="platformResultBadge" class="inline-block text-xs font-mono px-3 py-1 rounded-full bg-indigo-950 border border-indigo-700/60 text-brandAccent"></div>
+                    </div>
+                    <div>
+                        <span class="text-xs text-brandMuted block mb-1">Código de Verificación Obtenido:</span>
+                        <div id="extractedCodeText" class="text-4xl md:text-5xl font-extrabold font-mono tracking-widest text-brandAccent select-all py-2">------</div>
+                    </div>
+                    <div class="text-xs text-brandMuted flex items-center justify-center space-x-1" id="extractedMeta">
+                        <!-- Metadatos de expiración / tiempo -->
+                    </div>
+                    <button id="btnCopyCode" type="button" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-3 rounded-xl transition flex items-center justify-center space-x-2 shadow-lg shadow-indigo-900/30">
+                        <span>📋 Copiar Código al Portapapeles</span>
+                    </button>
+                </div>
+
+                <div id="extractionAlert" class="hidden p-4 rounded-xl text-xs font-medium"></div>
 
             </div>
 
@@ -254,5 +295,55 @@
     </footer>
 
     <script src="/static/app.js"></script>
+
+    <!-- SCRIPT DE CONTROL MODAL RESPONSIVE CLIENTE (IDÉNTICO A INDEX.HTML) -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleBtn = document.getElementById('mobileLoginToggleBtn');
+            const closeBtn = document.getElementById('closeMobileModalBtn');
+            const rightCol = document.getElementById('rightLoginColumn');
+            const backdrop = document.getElementById('mobileModalBackdrop');
+
+            function openClientModal() {
+                if (rightCol) {
+                    rightCol.style.display = 'block';
+                    rightCol.classList.remove('hidden', 'sticky', 'top-24');
+                    rightCol.classList.add('fixed', 'left-4', 'right-4', 'top-12', 'z-50', 'max-w-sm', 'mx-auto');
+                }
+                if (backdrop) backdrop.classList.remove('hidden');
+            }
+
+            function closeClientModal() {
+                if (rightCol) {
+                    rightCol.style.display = '';
+                    if (window.innerWidth < 1024) {
+                        rightCol.classList.add('hidden');
+                        rightCol.classList.remove('fixed', 'left-4', 'right-4', 'top-12', 'z-50', 'max-w-sm');
+                        rightCol.classList.add('sticky', 'top-24');
+                    }
+                }
+                if (backdrop) backdrop.classList.add('hidden');
+            }
+
+            if (toggleBtn) toggleBtn.addEventListener('click', openClientModal);
+            if (closeBtn) closeBtn.addEventListener('click', closeClientModal);
+            if (backdrop) backdrop.addEventListener('click', closeClientModal);
+
+            // Escuchar el cambio de tamaño de ventana (resize) para restaurar la vista de escritorio al agrandar
+            window.addEventListener('resize', () => {
+                if (rightCol) {
+                    if (window.innerWidth >= 1024) {
+                        rightCol.style.display = '';
+                        rightCol.classList.remove('fixed', 'left-4', 'right-4', 'top-12', 'z-50', 'max-w-sm', 'hidden');
+                        if (backdrop) backdrop.classList.add('hidden');
+                    } else {
+                        if (!rightCol.classList.contains('fixed')) {
+                            rightCol.classList.add('hidden');
+                        }
+                    }
+                }
+            });
+        });
+    </script>
 </body>
 </html>

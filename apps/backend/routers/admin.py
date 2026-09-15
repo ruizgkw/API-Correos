@@ -303,7 +303,15 @@ async def test_mail_account_connection(
 ):
     """Prueba la conexión IMAP en vivo de una cuenta agregada."""
     import uuid
-    stmt = select(MailAccount).where(MailAccount.id == uuid.UUID(account_id))
+    try:
+        account_uuid = uuid.UUID(account_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Identificador de cuenta inválido."
+        )
+
+    stmt = select(MailAccount).where(MailAccount.id == account_uuid)
     result = await db.execute(stmt)
     mail_acc = result.scalar_one_or_none()
 
@@ -313,22 +321,26 @@ async def test_mail_account_connection(
             detail="Cuenta de correo no encontrada."
         )
 
-    # Intentar conexión IMAP de prueba
-    test_result = await IMAPService.fetch_latest_email(
+    # Intentar conexión y autenticación IMAP de prueba en vivo
+    success, message = await IMAPService.test_connection(
         imap_server=mail_acc.imap_server or "imap.gmail.com",
         imap_port=mail_acc.imap_port or 993,
         email_address=mail_acc.email,
         encrypted_credentials=mail_acc.encrypted_credentials,
-        sender_filter="noreply@test.com",
         auth_type=mail_acc.auth_type.value,
         encrypted_refresh_token=mail_acc.encrypted_refresh_token,
         provider=mail_acc.provider.value
     )
 
-    # Si no trajo correo pero la autenticación fue exitosa (no retornó None por error de login)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=message
+        )
+
     return APIResponse(
         success=True,
-        message=f"Conexión e inicio de sesión IMAP exitosos para {mail_acc.email}."
+        message=message
     )
 
 # --- Endpoints de Autenticación OAuth2 (Google & Microsoft) ---

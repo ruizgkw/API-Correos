@@ -31,14 +31,14 @@ function setupAdminEventListeners() {
 
     if (tabLogin && tabRegister) {
         tabLogin.addEventListener('click', () => {
-            tabLogin.className = 'flex-1 py-2 text-center text-ghBlue border-b-2 border-ghBlue font-semibold';
-            tabRegister.className = 'flex-1 py-2 text-center text-ghMuted hover:text-white';
+            tabLogin.className = 'flex-1 py-2 text-center text-brandAccent border-b-2 border-brandAccent font-semibold';
+            tabRegister.className = 'flex-1 py-2 text-center text-brandMuted hover:text-white';
             passForm.classList.remove('hidden');
             regForm.classList.add('hidden');
         });
         tabRegister.addEventListener('click', () => {
-            tabRegister.className = 'flex-1 py-2 text-center text-ghBlue border-b-2 border-ghBlue font-semibold';
-            tabLogin.className = 'flex-1 py-2 text-center text-ghMuted hover:text-white';
+            tabRegister.className = 'flex-1 py-2 text-center text-brandAccent border-b-2 border-brandAccent font-semibold';
+            tabLogin.className = 'flex-1 py-2 text-center text-brandMuted hover:text-white';
             regForm.classList.remove('hidden');
             passForm.classList.add('hidden');
         });
@@ -99,6 +99,8 @@ function showAdminAuth() {
     document.getElementById('adminAuthSection').classList.remove('hidden');
     document.getElementById('adminDashboard').classList.add('hidden');
     document.getElementById('adminBadge').classList.add('hidden');
+    const backBtn = document.getElementById('adminBackBtn');
+    if (backBtn) backBtn.classList.remove('hidden');
 }
 
 function showDashboard(username) {
@@ -106,6 +108,8 @@ function showDashboard(username) {
     document.getElementById('adminDashboard').classList.remove('hidden');
     document.getElementById('adminBadge').classList.remove('hidden');
     document.getElementById('adminUserSpan').innerText = `Admin: ${username}`;
+    const backBtn = document.getElementById('adminBackBtn');
+    if (backBtn) backBtn.classList.add('hidden');
 }
 
 async function registerAdmin(telegramChatId, username, password) {
@@ -211,7 +215,7 @@ async function loadMailAccounts() {
 
         tbody.innerHTML = '';
         if (!accounts || accounts.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-ghMuted">No hay cuentas de correo registradas.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-brandMuted">No hay cuentas de correo registradas.</td></tr>`;
             return;
         }
 

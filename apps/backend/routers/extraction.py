@@ -46,6 +46,13 @@ async def get_current_user(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Usuario inactivo o no autorizado."
         )
+
+    # Si es cliente, verificar que esté aprobado en la Lista Blanca VIP
+    if user.role.value == "CLIENT" and not user.is_approved:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Acceso revocado o no aprobado en la Lista Blanca VIP. Contacta al administrador."
+        )
     return user
 
 @router.get("/platforms", response_model=List[PlatformResponse])
@@ -163,7 +170,8 @@ async def extract_code(
         since_datetime=request_timestamp,
         auth_type=mail_account.auth_type.value,
         encrypted_refresh_token=mail_account.encrypted_refresh_token,
-        provider=mail_account.provider.value
+        provider=mail_account.provider.value,
+        subject_filter=platform.subject_filter
     )
 
     if not email_data:

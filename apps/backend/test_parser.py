@@ -1,4 +1,3 @@
-import pytest
 from mail_parser import MailParser
 
 def test_extract_code_disney_direct():
@@ -43,3 +42,8 @@ def test_extract_netflix_link():
     assert result["success"] is True
     assert result["extraction_url"] == "https://www.netflix.com/account/login?code=998877665544332211"
     assert result["extraction_type"] == "WEB_SCRAPING"
+
+if __name__ == "__main__":
+    test_extract_code_disney_direct()
+    test_extract_netflix_link()
+    print("All parser tests passed successfully!")

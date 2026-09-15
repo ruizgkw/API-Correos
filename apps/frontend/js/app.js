@@ -62,73 +62,52 @@ function setupEventListeners() {
             setTimeout(() => btn.innerHTML = orig, 1500);
         });
     });
-
-    // Control modal de Login en Móvil
-    const mobileToggleBtn = document.getElementById('mobileLoginToggleBtn');
-    const closeMobileBtn = document.getElementById('closeMobileModalBtn');
-    const backdrop = document.getElementById('mobileModalBackdrop');
-
-    if (mobileToggleBtn) {
-        mobileToggleBtn.addEventListener('click', () => {
-            openMobileModal();
-        });
-    }
-
-    if (closeMobileBtn) {
-        closeMobileBtn.addEventListener('click', () => {
-            closeMobileModal();
-        });
-    }
-
-    if (backdrop) {
-        backdrop.addEventListener('click', () => {
-            closeMobileModal();
-        });
-    }
-}
-
-function openMobileModal() {
-    const col = document.getElementById('rightLoginColumn');
-    const backdrop = document.getElementById('mobileModalBackdrop');
-    if (col) {
-        col.style.display = 'block';
-        col.classList.remove('hidden', 'sticky', 'top-24');
-        col.classList.add('fixed', 'inset-x-4', 'top-16', 'z-50', 'max-w-md', 'mx-auto');
-    }
-    if (backdrop) backdrop.classList.remove('hidden');
-}
-
-function closeMobileModal() {
-    const col = document.getElementById('rightLoginColumn');
-    const backdrop = document.getElementById('mobileModalBackdrop');
-    if (col && window.innerWidth < 1024) {
-        col.style.display = 'none';
-        col.classList.add('hidden');
-        col.classList.remove('fixed', 'inset-x-4', 'top-16', 'z-50');
-        col.classList.add('sticky', 'top-24');
-    }
-    if (backdrop) backdrop.classList.add('hidden');
 }
 
 function showAuthSection() {
-    document.getElementById('authSection').classList.remove('hidden');
-    document.getElementById('extractionSection').classList.add('hidden');
-    document.getElementById('userBadge').classList.add('hidden');
-    const leftCol = document.getElementById('leftBrandColumn');
-    if (leftCol) leftCol.classList.remove('hidden');
+    const landing = document.getElementById('splitLandingContainer');
+    const dashboard = document.getElementById('clientDashboard');
+    const userBadge = document.getElementById('userBadge');
+    const mobileBtn = document.getElementById('mobileLoginToggleBtn');
+    const authSection = document.getElementById('authSection');
+    const reqForm = document.getElementById('requestOtpForm');
+    const verifyForm = document.getElementById('verifyOtpForm');
+
+    if (landing) landing.classList.remove('hidden');
+    if (dashboard) dashboard.classList.add('hidden');
+    if (userBadge) userBadge.classList.add('hidden');
+    if (mobileBtn) mobileBtn.classList.remove('hidden');
+    if (authSection) authSection.classList.remove('hidden');
+    if (reqForm) reqForm.classList.remove('hidden');
+    if (verifyForm) verifyForm.classList.add('hidden');
+    hideAlert('authAlert');
 }
 
 function showExtractionSection(chatId) {
-    document.getElementById('authSection').classList.add('hidden');
-    document.getElementById('extractionSection').classList.remove('hidden');
-    document.getElementById('userBadge').classList.remove('hidden');
-    document.getElementById('chatIdSpan').innerText = `ID: ${chatId}`;
-    
-    // Al autenticar, asegurarse de que se muestre en móvil si está en modal
+    // 1. Ocultar por completo la landing page (tanto tutorial como columna de login)
+    const landing = document.getElementById('splitLandingContainer');
+    if (landing) landing.classList.add('hidden');
+
+    // 2. Mostrar el panel del sistema de extracción (centrado y espacioso)
+    const dashboard = document.getElementById('clientDashboard');
+    if (dashboard) dashboard.classList.remove('hidden');
+
+    // 3. Mostrar identificador de usuario en el header
+    const userBadge = document.getElementById('userBadge');
+    if (userBadge) userBadge.classList.remove('hidden');
+    const chatIdSpan = document.getElementById('chatIdSpan');
+    if (chatIdSpan) chatIdSpan.innerText = `ID: ${chatId}`;
+
+    // 4. Ocultar botón móvil y cerrar modal si estaba abierto
+    const mobileBtn = document.getElementById('mobileLoginToggleBtn');
+    if (mobileBtn) mobileBtn.classList.add('hidden');
+    const backdrop = document.getElementById('mobileModalBackdrop');
+    if (backdrop) backdrop.classList.add('hidden');
+
     const rightCol = document.getElementById('rightLoginColumn');
-    if (rightCol && window.innerWidth < 1024) {
-        rightCol.style.display = 'block';
-        rightCol.classList.remove('hidden');
+    if (rightCol) {
+        rightCol.style.display = '';
+        rightCol.classList.remove('fixed', 'left-4', 'right-4', 'top-12', 'z-50', 'max-w-sm');
     }
 }
 
@@ -210,13 +189,37 @@ async function loadPlatforms() {
     }
 }
 
+function setBtnExtractText(text) {
+    const btnText = document.getElementById('btnExtractText');
+    if (btnText) {
+        btnText.innerText = text;
+    } else {
+        const btn = document.getElementById('btnExtract');
+        if (btn) {
+            const span = btn.querySelector('span');
+            if (span) span.innerText = text;
+            else btn.innerText = text;
+        }
+    }
+}
+
 async function handleExtraction(platformId, email) {
     const btn = document.getElementById('btnExtract');
     const token = localStorage.getItem('access_token');
+    const resultCard = document.getElementById('resultCard') || document.getElementById('resultContainer');
 
-    btn.disabled = true;
-    document.getElementById('btnExtractText').innerText = 'Consultando correo...';
-    document.getElementById('resultContainer').classList.add('hidden');
+    if (!platformId) {
+        showAlert('extractionAlert', 'Por favor selecciona una plataforma de streaming.', 'warning');
+        return;
+    }
+    if (!email) {
+        showAlert('extractionAlert', 'Por favor ingresa un correo.', 'warning');
+        return;
+    }
+
+    if (btn) btn.disabled = true;
+    setBtnExtractText('Consultando correo...');
+    if (resultCard) resultCard.classList.add('hidden');
     hideAlert('extractionAlert');
 
     try {
@@ -228,7 +231,7 @@ async function handleExtraction(platformId, email) {
             },
             body: JSON.stringify({
                 platform_id: parseInt(platformId),
-                email: email
+                email: email.trim()
             })
         });
 
@@ -236,26 +239,34 @@ async function handleExtraction(platformId, email) {
 
         if (res.status === 429) {
             // Manejar Cooldown activo de 7 minutos
-            const seconds = data.detail.cooldown_remaining_seconds || 420;
+            const seconds = (data.detail && data.detail.cooldown_remaining_seconds) || 420;
             startCooldownTimer(seconds);
-            showAlert('extractionAlert', data.detail.message || 'Cooldown activo.', 'warning');
+            showAlert('extractionAlert', (data.detail && data.detail.message) || 'Cooldown activo.', 'warning');
         } else if (res.ok && data.success) {
             // Éxito
-            document.getElementById('extractedCodeText').innerText = data.extracted_code;
-            document.getElementById('platformResultBadge').innerText = `Plataforma: ${data.platform_name}`;
-            document.getElementById('resultContainer').classList.remove('hidden');
+            const codeEl = document.getElementById('extractedCodeText');
+            if (codeEl) codeEl.innerText = data.extracted_code;
+
+            const badgeEl = document.getElementById('platformResultBadge');
+            if (badgeEl) badgeEl.innerText = `Plataforma: ${data.platform_name}`;
+
+            const metaEl = document.getElementById('extractedMeta');
+            if (metaEl) metaEl.innerText = `Código generado con éxito • Expira en pocos minutos`;
+
+            if (resultCard) resultCard.classList.remove('hidden');
             
             // Iniciar cooldown de 7 minutos (420 segundos)
-            startCooldownTimer(420);
+            startCooldownTimer(data.cooldown_seconds || 420);
         } else {
-            showAlert('extractionAlert', data.message || data.detail || 'No se pudo obtener el código.', 'error');
-            btn.disabled = false;
-            document.getElementById('btnExtractText').innerText = 'Generar Código';
+            const errorMsg = data.message || (typeof data.detail === 'string' ? data.detail : 'No se pudo obtener el código.');
+            showAlert('extractionAlert', errorMsg, 'error');
+            if (btn) btn.disabled = false;
+            setBtnExtractText('🔍 Buscar Código Ahora');
         }
     } catch (err) {
         showAlert('extractionAlert', 'Error de conexión con el servidor.', 'error');
-        btn.disabled = false;
-        document.getElementById('btnExtractText').innerText = 'Generar Código';
+        if (btn) btn.disabled = false;
+        setBtnExtractText('🔍 Buscar Código Ahora');
     }
 }
 
@@ -265,31 +276,39 @@ function startCooldownTimer(totalSeconds) {
     const progressBar = document.getElementById('cooldownProgressBar');
     const btn = document.getElementById('btnExtract');
 
-    container.classList.remove('hidden');
-    btn.disabled = true;
+    if (container) container.classList.remove('hidden');
+    if (btn) btn.disabled = true;
 
     let remaining = totalSeconds;
 
     if (cooldownInterval) clearInterval(cooldownInterval);
+
+    const updateUI = () => {
+        const mins = String(Math.floor(remaining / 60)).padStart(2, '0');
+        const secs = String(remaining % 60).padStart(2, '0');
+        if (timerText) timerText.innerText = `${mins}:${secs}`;
+        setBtnExtractText(`Espera (${mins}:${secs})`);
+
+        if (progressBar) {
+            const pct = Math.max(0, Math.min(100, (remaining / 420) * 100));
+            progressBar.style.width = `${pct}%`;
+        }
+    };
+
+    updateUI();
 
     cooldownInterval = setInterval(() => {
         remaining--;
 
         if (remaining <= 0) {
             clearInterval(cooldownInterval);
-            container.classList.add('hidden');
-            btn.disabled = false;
-            document.getElementById('btnExtractText').innerText = 'Generar Código';
+            if (container) container.classList.add('hidden');
+            if (btn) btn.disabled = false;
+            setBtnExtractText('🔍 Buscar Código Ahora');
             return;
         }
 
-        const mins = String(Math.floor(remaining / 60)).padStart(2, '0');
-        const secs = String(remaining % 60).padStart(2, '0');
-        timerText.innerText = `${mins}:${secs}`;
-        document.getElementById('btnExtractText').innerText = `Espera (${mins}:${secs})`;
-
-        const pct = (remaining / 420) * 100;
-        progressBar.style.width = `${pct}%`;
+        updateUI();
     }, 1000);
 }
 

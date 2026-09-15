@@ -62,6 +62,73 @@ class IMAPService:
         return {"text": text_body, "html": html_body}
 
     @classmethod
+    async def test_connection(
+        cls,
+        imap_server: str,
+        imap_port: int,
+        email_address: str,
+        encrypted_credentials: Optional[str] = None,
+        auth_type: str = "APP_PASSWORD",
+        encrypted_refresh_token: Optional[str] = None,
+        provider: str = "GENERIC_IMAP"
+    ) -> tuple[bool, str]:
+        """
+        Prueba la conexión IMAP y autenticación real sin descargar correos.
+        Retorna (success: bool, message: str).
+        """
+        access_token = None
+        raw_password = None
+
+        try:
+            if auth_type == "OAUTH2" or (encrypted_refresh_token and not encrypted_credentials):
+                refresh_token = security.decrypt_data(encrypted_refresh_token)
+                if not refresh_token:
+                    return False, "No se pudo descifrar el Refresh Token OAuth2."
+                if provider == "OUTLOOK" or "hotmail" in email_address.lower() or "outlook" in email_address.lower():
+                    access_token = await security.refresh_microsoft_access_token(refresh_token)
+                else:
+                    access_token = await security.refresh_google_access_token(refresh_token)
+
+                if not access_token:
+                    return False, f"Error al refrescar token OAuth2 con el proveedor {provider}."
+            else:
+                raw_password = security.decrypt_data(encrypted_credentials)
+                if not raw_password:
+                    return False, "No se pudieron descifrar las credenciales almacenadas."
+                raw_password = raw_password.strip()
+
+            imap_client = aioimaplib.IMAP4_SSL(host=imap_server, port=imap_port)
+            await imap_client.wait_hello_from_server()
+
+            if access_token:
+                login_res = await imap_client.xoauth2(email_address, access_token)
+            else:
+                login_res = await imap_client.login(email_address, raw_password)
+
+            if login_res.result != "OK":
+                error_detail = " ".join([l.decode('utf-8', errors='ignore') if isinstance(l, bytes) else str(l) for l in login_res.lines]) if login_res.lines else "Credenciales rechazadas."
+                try:
+                    await imap_client.logout()
+                except Exception:
+                    pass
+                return False, f"Fallo de autenticación IMAP: {error_detail}"
+
+            select_res = await imap_client.select("INBOX")
+            if select_res.result != "OK":
+                try:
+                    await imap_client.logout()
+                except Exception:
+                    pass
+                return False, "Autenticación correcta pero no se pudo abrir la bandeja INBOX."
+
+            await imap_client.logout()
+            return True, f"Conexión e inicio de sesión IMAP exitosos para {email_address}."
+
+        except Exception as e:
+            logger.error(f"Error en test_connection para {email_address}: {e}")
+            return False, f"Error al conectar con el servidor IMAP ({imap_server}:{imap_port}): {str(e)}"
+
+    @classmethod
     async def fetch_latest_email(
         cls,
         imap_server: str,
@@ -72,7 +139,8 @@ class IMAPService:
         since_datetime: Optional[datetime] = None,
         auth_type: str = "APP_PASSWORD",
         encrypted_refresh_token: Optional[str] = None,
-        provider: str = "GENERIC_IMAP"
+        provider: str = "GENERIC_IMAP",
+        subject_filter: Optional[str] = None
     ) -> Optional[Dict[str, Any]]:
         """
         Se conecta de forma asíncrona vía IMAP SSL descifrando credenciales o refrescando el token OAuth2 XOAUTH2.
@@ -95,6 +163,7 @@ class IMAPService:
             if not raw_password:
                 logger.error(f"No se pudieron descifrar las credenciales para {email_address}")
                 return None
+            raw_password = raw_password.strip()
 
         imap_client = aioimaplib.IMAP4_SSL(host=imap_server, port=imap_port)
         
@@ -102,18 +171,17 @@ class IMAPService:
             await imap_client.wait_hello_from_server()
 
             if access_token:
-                # Construir trama SASL XOAUTH2: user=user@domain.com\x01auth=Bearer ACCESS_TOKEN\x01\x01
-                auth_string = f"user={email_address}\x01auth=Bearer {access_token}\x01\x01"
-                import base64
-                encoded_auth = base64.b64encode(auth_string.encode('utf-8')).decode('utf-8')
-                
-                # Ejecutar comando XOAUTH2 con aioimaplib
-                login_res = await imap_client.authenticate('XOAUTH2', lambda x: encoded_auth)
+                # aioimaplib tiene método dedicado xoauth2(user, token)
+                login_res = await imap_client.xoauth2(email_address, access_token)
             else:
                 login_res = await imap_client.login(email_address, raw_password)
 
             if login_res.result != "OK":
                 logger.error(f"Fallo de autenticación IMAP ({auth_type}) para {email_address}: {login_res}")
+                try:
+                    await imap_client.logout()
+                except Exception:
+                    pass
                 return None
 
             select_res = await imap_client.select("INBOX")
@@ -177,18 +245,33 @@ class IMAPService:
                 sender = cls._decode_header_str(msg.get("From"))
                 date_str = msg.get("Date")
 
-                # 1. Validar Filtro de Asunto (si se especificó uno)
-                if since_datetime and isinstance(since_datetime, str):
-                    # Si viene filtro de asunto en since_datetime como fallback
-                    pass
+                # 1. Validar Filtro de Remitente (estricto contra falsos positivos si search usó ALL)
+                if sender_filter:
+                    clean_sender = sender.lower()
+                    expected_sender = sender_filter.lower().strip()
+                    if expected_sender not in clean_sender:
+                        logger.info(f"Correo ID {current_id} omitido: remitente '{sender}' no contiene '{expected_sender}'")
+                        continue
 
-                # 2. Validar Fecha/Antigüedad (< 10 minutos)
+                # 2. Validar Filtro de Asunto (si la plataforma define una palabra clave requerida)
+                if subject_filter:
+                    clean_subject = subject.lower()
+                    expected_kw = subject_filter.lower().strip()
+                    if expected_kw not in clean_subject:
+                        logger.info(f"Correo ID {current_id} omitido: asunto '{subject}' no contiene palabra clave '{expected_kw}'")
+                        continue
+
+                # 3. Validar Fecha/Antigüedad (< 10 minutos)
+                if not date_str:
+                    logger.warning(f"Correo ID {current_id} descartado por carecer de cabecera Date.")
+                    continue
+
                 email_dt = None
-                if date_str:
-                    try:
-                        email_dt = email.utils.parsedate_to_datetime(date_str)
-                    except Exception as e:
-                        logger.warning(f"No se pudo parsear la fecha del correo '{date_str}': {e}")
+                try:
+                    email_dt = email.utils.parsedate_to_datetime(date_str)
+                except Exception as e:
+                    logger.warning(f"No se pudo parsear la fecha del correo '{date_str}': {e}")
+                    continue
 
                 if email_dt:
                     # Normalizar a UTC si es naive
@@ -196,11 +279,11 @@ class IMAPService:
                         email_dt = email_dt.replace(tzinfo=timezone.utc)
                     
                     age_seconds = (now_utc - email_dt).total_seconds()
-                    logger.info(f"[EMAIL CHECK] ID {current_id} | Asunto: '{subject}' | Antigüedad: {int(age_seconds)}s")
+                    logger.info(f"[EMAIL CHECK] ID {current_id} | Remitente: '{sender}' | Asunto: '{subject}' | Antigüedad: {int(age_seconds)}s")
 
-                    # Si el correo tiene más de 10 minutos (600 s), descartar
-                    if age_seconds > MAX_AGE_SECONDS:
-                        logger.info(f"Correo ID {current_id} descartado por antigüedad ({int(age_seconds)}s > 600s).")
+                    # Si el correo tiene más de 10 minutos o está en el futuro (> 300s), descartar
+                    if age_seconds > MAX_AGE_SECONDS or age_seconds < -300:
+                        logger.info(f"Correo ID {current_id} descartado por antigüedad ({int(age_seconds)}s fuera de rango permitido).")
                         continue
                 
                 # Extraer cuerpo del correo válido
