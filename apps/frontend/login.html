@@ -41,6 +41,11 @@
         </div>
         <div class="flex items-center space-x-4">
 
+            <!-- BOTÓN VOLVER AL INICIO DE LOGIN (Visible en el dashboard de extracción) -->
+            <button id="clientBackBtn" class="hidden text-xs bg-brandCard border border-brandBorder hover:bg-brandBorder text-brandText px-3 py-1.5 rounded-xl font-medium transition flex items-center space-x-1 shadow cursor-pointer">
+                <span>← Volver al Inicio</span>
+            </button>
+
             <div id="userBadge" class="hidden flex items-center space-x-3">
                 <span class="text-xs text-brandMuted font-mono" id="chatIdSpan"></span>
                 <button id="logoutBtn" class="text-xs text-rose-400 hover:underline font-medium">Cerrar Sesión</button>
@@ -231,6 +236,9 @@
                             <button type="submit" id="btnVerifyOtp" class="w-full bg-gradient-to-r from-brandPrimary via-brandAccent to-purple-500 hover:from-brandPrimaryHover hover:to-brandPrimary text-white font-bold py-3.5 rounded-xl text-sm transition duration-150 shadow-lg shadow-indigo-900/40 cursor-pointer">
                                 Verificar e Ingresar al Sistema
                             </button>
+                            <button type="button" id="btnBackToRequestOtp" class="w-full text-xs text-brandMuted hover:text-white py-1.5 transition flex items-center justify-center space-x-1 cursor-pointer">
+                                <span>← Volver y cambiar Telegram ID</span>
+                            </button>
                         </form>
                         
                         <div id="authAlert" class="hidden p-3.5 rounded-xl text-xs"></div>
@@ -254,8 +262,13 @@
                     </div>
                     <p class="text-xs text-brandMuted">Consulta tu código en tiempo real de forma segura y sin intermediarios.</p>
                 </div>
-                <div class="flex items-center space-x-2 bg-indigo-950/60 border border-indigo-800/50 px-3 py-1.5 rounded-xl">
-                    <span class="text-xs font-mono text-emerald-400 font-semibold">● Sesión Activa</span>
+                <div class="flex items-center space-x-3">
+                    <button id="dashboardBackBtn" class="text-xs bg-brandBg border border-brandBorder hover:bg-brandBorder text-brandText px-3.5 py-1.5 rounded-xl font-medium transition flex items-center space-x-1.5 shadow cursor-pointer">
+                        <span>← Volver al Inicio</span>
+                    </button>
+                    <div class="flex items-center space-x-2 bg-indigo-950/60 border border-indigo-800/50 px-3 py-1.5 rounded-xl">
+                        <span class="text-xs font-mono text-emerald-400 font-semibold">● Sesión Activa</span>
+                    </div>
                 </div>
             </div>
 

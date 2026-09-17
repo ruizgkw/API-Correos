@@ -38,11 +38,35 @@ function setupEventListeners() {
         await verifyOtp(chatId, otp);
     });
 
+    const returnToLoginHome = () => {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('telegram_chat_id');
+        showAuthSection();
+    };
+
+    // Botones Volver para cliente final
+    const clientBackBtn = document.getElementById('clientBackBtn');
+    if (clientBackBtn) clientBackBtn.addEventListener('click', returnToLoginHome);
+
+    const dashboardBackBtn = document.getElementById('dashboardBackBtn');
+    if (dashboardBackBtn) dashboardBackBtn.addEventListener('click', returnToLoginHome);
+
+    const btnBackToRequestOtp = document.getElementById('btnBackToRequestOtp');
+    if (btnBackToRequestOtp) {
+        btnBackToRequestOtp.addEventListener('click', () => {
+            const verifyForm = document.getElementById('verifyOtpForm');
+            if (verifyForm) verifyForm.classList.add('hidden');
+            const reqForm = document.getElementById('requestOtpForm');
+            if (reqForm) reqForm.classList.remove('hidden');
+            hideAlert('authAlert');
+        });
+    }
+
     // Logout
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-        localStorage.clear();
-        location.reload();
-    });
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', returnToLoginHome);
+    }
 
     // Extracción de código
     document.getElementById('extractionForm').addEventListener('submit', async (e) => {
@@ -68,6 +92,7 @@ function showAuthSection() {
     const landing = document.getElementById('splitLandingContainer');
     const dashboard = document.getElementById('clientDashboard');
     const userBadge = document.getElementById('userBadge');
+    const clientBackBtn = document.getElementById('clientBackBtn');
     const mobileBtn = document.getElementById('mobileLoginToggleBtn');
     const authSection = document.getElementById('authSection');
     const reqForm = document.getElementById('requestOtpForm');
@@ -76,6 +101,7 @@ function showAuthSection() {
     if (landing) landing.classList.remove('hidden');
     if (dashboard) dashboard.classList.add('hidden');
     if (userBadge) userBadge.classList.add('hidden');
+    if (clientBackBtn) clientBackBtn.classList.add('hidden');
     if (mobileBtn) mobileBtn.classList.remove('hidden');
     if (authSection) authSection.classList.remove('hidden');
     if (reqForm) reqForm.classList.remove('hidden');
@@ -92,11 +118,13 @@ function showExtractionSection(chatId) {
     const dashboard = document.getElementById('clientDashboard');
     if (dashboard) dashboard.classList.remove('hidden');
 
-    // 3. Mostrar identificador de usuario en el header
+    // 3. Mostrar identificador de usuario y botón volver en el header
     const userBadge = document.getElementById('userBadge');
     if (userBadge) userBadge.classList.remove('hidden');
     const chatIdSpan = document.getElementById('chatIdSpan');
     if (chatIdSpan) chatIdSpan.innerText = `ID: ${chatId}`;
+    const clientBackBtn = document.getElementById('clientBackBtn');
+    if (clientBackBtn) clientBackBtn.classList.remove('hidden');
 
     // 4. Ocultar botón móvil y cerrar modal si estaba abierto
     const mobileBtn = document.getElementById('mobileLoginToggleBtn');
