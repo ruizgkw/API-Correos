@@ -9,7 +9,8 @@ from database import get_db
 from models import User, UserRole, MailAccount, MailProvider, AuthType
 from schemas import (
     AdminRegisterRequest, AdminLoginPassRequest, Admin2FAVerifyRequest, TokenResponse, APIResponse,
-    MailAccountCreateRequest, MailAccountUpdateRequest, MailAccountResponse, ClientUserResponse, ClientApproveRequest
+    MailAccountCreateRequest, MailAccountUpdateRequest, MailAccountResponse, ClientUserResponse, ClientApproveRequest,
+    AdminProfileResponse, AdminChangeCredentialsRequest, AdminChangeCredentialsVerifyRequest
 )
 
 
@@ -310,6 +311,40 @@ async def update_mail_account(
         is_active=mail_acc.is_active
     )
 
+@router.delete("/mail-accounts/{account_id}", response_model=APIResponse)
+async def delete_mail_account(
+    account_id: str,
+    admin: User = Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db)
+):
+    """Elimina permanentemente una cuenta de correo."""
+    import uuid
+    try:
+        acc_uuid = uuid.UUID(account_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="ID de cuenta de correo inválido."
+        )
+
+    stmt = select(MailAccount).where(MailAccount.id == acc_uuid)
+    result = await db.execute(stmt)
+    mail_acc = result.scalar_one_or_none()
+
+    if not mail_acc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Cuenta de correo no encontrada."
+        )
+
+    email_deleted = mail_acc.email
+    await db.delete(mail_acc)
+    await db.commit()
+
+    return APIResponse(
+        success=True,
+        message=f"Cuenta de correo '{email_deleted}' eliminada exitosamente."
+    )
 
 @router.post("/mail-accounts/{account_id}/test-connection", response_model=APIResponse)
 async def test_mail_account_connection(
@@ -532,7 +567,7 @@ async def list_clients(
     db: AsyncSession = Depends(get_db)
 ):
     """Lista los clientes registrados en la plataforma."""
-    stmt = select(User).where(User.role == UserRole.CLIENT)
+    stmt = select(User).where(User.role == UserRole.CLIENT).order_by(User.created_at.desc())
     result = await db.execute(stmt)
     clients = result.scalars().all()
 
@@ -540,6 +575,7 @@ async def list_clients(
         ClientUserResponse(
             id=str(c.id),
             telegram_chat_id=c.telegram_chat_id,
+            full_name=c.full_name,
             is_active=c.is_active,
             is_approved=c.is_approved,
             created_at=c.created_at.isoformat()
@@ -553,20 +589,25 @@ async def authorize_client(
     admin: User = Depends(get_current_admin),
     db: AsyncSession = Depends(get_db)
 ):
-    """Agrega o actualiza la autorización (Lista Blanca) de un Telegram Chat ID de cliente."""
+    """Agrega o actualiza la autorización (Lista Blanca) y nombre de un cliente."""
     stmt = select(User).where(User.telegram_chat_id == body.telegram_chat_id)
     result = await db.execute(stmt)
     user = result.scalar_one_or_none()
 
+    clean_name = body.full_name.strip() if body.full_name and body.full_name.strip() else None
+
     if not user:
         user = User(
             telegram_chat_id=body.telegram_chat_id,
+            full_name=clean_name,
             role=UserRole.CLIENT,
             is_active=True,
             is_approved=body.is_approved
         )
         db.add(user)
     else:
+        if clean_name is not None:
+            user.full_name = clean_name
         user.is_approved = body.is_approved
 
     await db.commit()
@@ -575,7 +616,150 @@ async def authorize_client(
     return ClientUserResponse(
         id=str(user.id),
         telegram_chat_id=user.telegram_chat_id,
+        full_name=user.full_name,
         is_active=user.is_active,
         is_approved=user.is_approved,
         created_at=user.created_at.isoformat()
+    )
+
+@router.delete("/clients/{chat_id}", response_model=APIResponse)
+async def delete_client(
+    chat_id: int,
+    admin: User = Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db)
+):
+    """Elimina permanentemente a un cliente de la base de datos."""
+    stmt = select(User).where(User.telegram_chat_id == chat_id, User.role == UserRole.CLIENT)
+    result = await db.execute(stmt)
+    user = result.scalar_one_or_none()
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Cliente no encontrado en la Lista Blanca."
+        )
+
+    display_name = user.full_name or f"ID: {user.telegram_chat_id}"
+    await db.delete(user)
+    await db.commit()
+
+    return APIResponse(
+        success=True,
+        message=f"Cliente '{display_name}' eliminado exitosamente."
+    )
+
+# --- Endpoints de Gestión de Perfil y Seguridad del Administrador ---
+
+@router.get("/profile", response_model=AdminProfileResponse)
+async def get_admin_profile(admin: User = Depends(get_current_admin)):
+    """Obtiene los datos del administrador autenticado."""
+    return AdminProfileResponse(
+        username=admin.username or "admin",
+        telegram_chat_id=admin.telegram_chat_id,
+        created_at=admin.created_at.isoformat()
+    )
+
+@router.post("/profile/change-credentials-request", response_model=APIResponse)
+async def admin_change_credentials_request(
+    body: AdminChangeCredentialsRequest,
+    admin: User = Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Paso 1: Valida credenciales actuales y envía un código 2FA a Telegram para autorizar el cambio.
+    """
+    import json
+    import secrets
+
+    # 1. Validar contraseña actual
+    if not security.verify_password(body.current_password, admin.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="La contraseña actual ingresada es incorrecta."
+        )
+
+    new_user = body.new_username.strip() if body.new_username else None
+    new_pass = body.new_password.strip() if body.new_password else None
+
+    if not new_user and not new_pass:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Debes especificar un nuevo nombre de usuario o una nueva contraseña."
+        )
+
+    # 2. Si cambia de usuario, validar que esté disponible
+    if new_user and new_user != admin.username:
+        check_stmt = select(User).where(User.username == new_user, User.id != admin.id)
+        check_res = await db.execute(check_stmt)
+        if check_res.scalar_one_or_none():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="El nuevo nombre de usuario especificado ya está en uso."
+            )
+
+    # 3. Generar OTP de 6 dígitos y guardar payload pendiente en Redis
+    otp_code = f"{secrets.randbelow(900000) + 100000}"
+    pending_payload = {
+        "admin_id": str(admin.id),
+        "new_username": new_user,
+        "new_password_hash": security.get_password_hash(new_pass) if new_pass else None,
+        "otp_code": otp_code
+    }
+
+    redis_client = redis_service.get_redis_client()
+    redis_key = f"admin_cred_change:{admin.id}"
+    await redis_client.set(redis_key, json.dumps(pending_payload), ex=300)
+
+    # 4. Enviar notificación 2FA por Telegram
+    sent = await telegram_service.send_otp_message(admin.telegram_chat_id, otp_code)
+    if not sent:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error al enviar el código de verificación por Telegram."
+        )
+
+    return APIResponse(
+        success=True,
+        message="Código de confirmación 2FA enviado a tu Telegram. Ingrésalo para aplicar los cambios."
+    )
+
+@router.post("/profile/change-credentials-verify", response_model=APIResponse)
+async def admin_change_credentials_verify(
+    body: AdminChangeCredentialsVerifyRequest,
+    admin: User = Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Paso 2: Verifica el código 2FA y aplica permanentemente los cambios de usuario y/o contraseña.
+    """
+    import json
+    redis_client = redis_service.get_redis_client()
+    redis_key = f"admin_cred_change:{admin.id}"
+    data_raw = await redis_client.get(redis_key)
+
+    if not data_raw:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="La solicitud de cambio de credenciales expiró o no existe. Solicita un nuevo código."
+        )
+
+    pending = json.loads(data_raw)
+    if body.otp_code.strip() != pending.get("otp_code"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Código de confirmación 2FA incorrecto."
+        )
+
+    # Aplicar cambios
+    if pending.get("new_username"):
+        admin.username = pending["new_username"]
+    if pending.get("new_password_hash"):
+        admin.hashed_password = pending["new_password_hash"]
+
+    await db.commit()
+    await redis_client.delete(redis_key)
+
+    return APIResponse(
+        success=True,
+        message="Credenciales de Administrador actualizadas exitosamente."
     )

@@ -121,75 +121,186 @@
         </div>
 
 
-        <!-- 2. DASHBOARD DE ADMINISTRACIÓN -->
-        <div id="adminDashboard" class="hidden space-y-8">
+        <!-- 2. DASHBOARD DE ADMINISTRACIÓN MODULAR -->
+        <div id="adminDashboard" class="hidden space-y-6">
             
-            <!-- Controles Superiores -->
-            <!-- Controles Superiores -->
-            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-brandCard border border-brandBorder p-5 rounded-2xl shadow-lg">
-                <div>
-                    <h2 class="text-base font-bold text-white">Gestión de Cuentas de Correo</h2>
-                    <p class="text-xs text-brandMuted">Configura cuentas IMAP tradicionales o vincúlalas vía OAuth2 de 1 Clic.</p>
-                </div>
-                <div class="flex flex-wrap items-center gap-2">
-                    <button onclick="connectOAuth('MICROSOFT')" class="bg-blue-600 hover:bg-blue-500 text-white text-xs px-3.5 py-2.5 rounded-xl font-medium transition shadow-lg shadow-blue-900/30 flex items-center space-x-1.5">
-                        <span>🔑 Conectar Hotmail/Outlook (OAuth2)</span>
-                    </button>
-                    <button onclick="connectOAuth('GOOGLE')" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3.5 py-2.5 rounded-xl font-medium transition shadow-lg shadow-emerald-900/30 flex items-center space-x-1.5">
-                        <span>🔑 Conectar Gmail (OAuth2)</span>
-                    </button>
-                    <button id="btnOpenAddMailModal" class="bg-brandPrimary hover:bg-brandPrimaryHover text-white text-xs px-3.5 py-2.5 rounded-xl font-medium transition shadow-lg shadow-indigo-900/30 flex items-center space-x-1.5">
-                        <span>+ Agregar Manual</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Tabla de Cuentas de Correo Midnight Style -->
-            <div class="bg-brandCard border border-brandBorder rounded-2xl overflow-x-auto shadow-xl">
-                <table class="w-full text-left text-xs min-w-[600px]">
-                    <thead class="bg-brandBg border-b border-brandBorder text-brandMuted uppercase font-mono">
-                        <tr>
-                            <th class="p-4">Correo</th>
-                            <th class="p-4">Proveedor</th>
-                            <th class="p-4">Servidor IMAP</th>
-                            <th class="p-4">Estado</th>
-                            <th class="p-4 text-right">Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody id="mailAccountsTableBody" class="divide-y divide-brandBorder">
-                        <!-- Filas cargadas por JS -->
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- SECCIÓN LISTA BLANCA DE CLIENTES (AUTORIZACIÓN VIP) -->
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-brandCard border border-brandBorder p-5 rounded-2xl shadow-lg mt-8">
-                <div>
-                    <h2 class="text-base font-bold text-white">Lista Blanca de Clientes VIP</h2>
-                    <p class="text-xs text-brandMuted">Autoriza Telegram Chat IDs para permitirles solicitar códigos de verificación.</p>
-                </div>
-                <button onclick="openAuthorizeClientModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-4 py-2.5 rounded-xl font-medium transition shadow-lg shadow-emerald-900/30 flex items-center space-x-1.5">
-                    <span>+ Autorizar Nuevo Cliente</span>
+            <!-- PESTAÑAS DE NAVEGACIÓN MODULAR DEL DASHBOARD -->
+            <div class="flex border-b border-brandBorder space-x-1 sm:space-x-3 text-xs sm:text-sm font-semibold overflow-x-auto pb-1">
+                <button id="dashboardTabMails" class="px-4 py-3 text-brandAccent border-b-2 border-brandAccent flex items-center space-x-2 transition cursor-pointer shrink-0">
+                    <span>📧 Cuentas de Correo</span>
+                    <span id="badgeCountMails" class="bg-indigo-950/80 border border-indigo-800/60 text-brandAccent text-[10px] px-2 py-0.5 rounded-full font-mono">0</span>
+                </button>
+                <button id="dashboardTabClients" class="px-4 py-3 text-brandMuted hover:text-white border-b-2 border-transparent flex items-center space-x-2 transition cursor-pointer shrink-0">
+                    <span>👥 Clientes VIP</span>
+                    <span id="badgeCountClients" class="bg-brandBg border border-brandBorder text-brandMuted text-[10px] px-2 py-0.5 rounded-full font-mono">0</span>
+                </button>
+                <button id="dashboardTabProfile" class="px-4 py-3 text-brandMuted hover:text-white border-b-2 border-transparent flex items-center space-x-2 transition cursor-pointer shrink-0">
+                    <span>⚙️ Seguridad y Perfil</span>
                 </button>
             </div>
 
-            <div class="bg-brandCard border border-brandBorder rounded-2xl overflow-x-auto shadow-xl">
-                <table class="w-full text-left text-xs min-w-[500px]">
-                    <thead class="bg-brandBg border-b border-brandBorder text-brandMuted uppercase font-mono">
-                        <tr>
-                            <th class="p-4">Telegram Chat ID</th>
-                            <th class="p-4">Estado de Acceso</th>
-                            <th class="p-4">Fecha de Registro</th>
-                            <th class="p-4 text-right">Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody id="clientsTableBody" class="divide-y divide-brandBorder">
-                        <!-- Filas cargadas por JS -->
-                    </tbody>
-                </table>
+            <!-- SECCIÓN 1: GESTIÓN DE CUENTAS DE CORREO -->
+            <div id="sectionMails" class="space-y-6">
+                <!-- Controles Superiores -->
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-brandCard border border-brandBorder p-5 rounded-2xl shadow-lg">
+                    <div>
+                        <h2 class="text-base font-bold text-white">Gestión de Cuentas de Correo</h2>
+                        <p class="text-xs text-brandMuted">Configura cuentas IMAP tradicionales o vincúlalas vía OAuth2 de 1 Clic.</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button onclick="connectOAuth('MICROSOFT')" class="bg-blue-600 hover:bg-blue-500 text-white text-xs px-3.5 py-2.5 rounded-xl font-medium transition shadow-lg shadow-blue-900/30 flex items-center space-x-1.5 cursor-pointer">
+                            <span>🔑 Conectar Hotmail/Outlook (OAuth2)</span>
+                        </button>
+                        <button onclick="connectOAuth('GOOGLE')" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3.5 py-2.5 rounded-xl font-medium transition shadow-lg shadow-emerald-900/30 flex items-center space-x-1.5 cursor-pointer">
+                            <span>🔑 Conectar Gmail (OAuth2)</span>
+                        </button>
+                        <button id="btnOpenAddMailModal" class="bg-brandPrimary hover:bg-brandPrimaryHover text-white text-xs px-3.5 py-2.5 rounded-xl font-medium transition shadow-lg shadow-indigo-900/30 flex items-center space-x-1.5 cursor-pointer">
+                            <span>+ Agregar Manual</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Barra de Búsqueda de Correos en tiempo real -->
+                <div class="flex items-center justify-between gap-4 bg-brandCard/60 border border-brandBorder p-3.5 rounded-xl">
+                    <div class="relative flex-1 max-w-md">
+                        <input type="text" id="searchMailsInput" placeholder="🔍 Buscar por correo o servidor..." class="w-full bg-brandBg border border-brandBorder rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-brandMuted focus:outline-none focus:border-brandPrimary font-mono transition">
+                        <span class="absolute left-3 top-2.5 text-xs text-brandMuted">📧</span>
+                    </div>
+                    <span id="searchMailsCount" class="text-xs text-brandMuted font-mono"></span>
+                </div>
+
+                <!-- Tabla de Cuentas de Correo Midnight Style -->
+                <div class="bg-brandCard border border-brandBorder rounded-2xl overflow-x-auto shadow-xl">
+                    <table class="w-full text-left text-xs min-w-[650px]">
+                        <thead class="bg-brandBg border-b border-brandBorder text-brandMuted uppercase font-mono">
+                            <tr>
+                                <th class="p-4">Correo</th>
+                                <th class="p-4">Proveedor</th>
+                                <th class="p-4">Servidor IMAP</th>
+                                <th class="p-4">Estado</th>
+                                <th class="p-4 text-right">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="mailAccountsTableBody" class="divide-y divide-brandBorder">
+                            <!-- Filas cargadas por JS -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
-            <!-- Modal Agregar / Editar Cuenta -->
+            <!-- SECCIÓN 2: LISTA BLANCA DE CLIENTES VIP -->
+            <div id="sectionClients" class="space-y-6 hidden">
+                <!-- Controles Superiores de Clientes -->
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-brandCard border border-brandBorder p-5 rounded-2xl shadow-lg">
+                    <div>
+                        <h2 class="text-base font-bold text-white">Lista Blanca de Clientes VIP</h2>
+                        <p class="text-xs text-brandMuted">Autoriza clientes con su nombre y Telegram Chat ID para permitirles extraer códigos.</p>
+                    </div>
+                    <button onclick="openAuthorizeClientModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-4 py-2.5 rounded-xl font-medium transition shadow-lg shadow-emerald-900/30 flex items-center space-x-1.5 cursor-pointer">
+                        <span>+ Autorizar Nuevo Cliente</span>
+                    </button>
+                </div>
+
+                <!-- Barra de Búsqueda de Clientes en tiempo real -->
+                <div class="flex items-center justify-between gap-4 bg-brandCard/60 border border-brandBorder p-3.5 rounded-xl">
+                    <div class="relative flex-1 max-w-md">
+                        <input type="text" id="searchClientsInput" placeholder="🔍 Buscar por nombre o Telegram Chat ID..." class="w-full bg-brandBg border border-brandBorder rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-brandMuted focus:outline-none focus:border-brandPrimary font-mono transition">
+                        <span class="absolute left-3 top-2.5 text-xs text-brandMuted">👤</span>
+                    </div>
+                    <span id="searchClientsCount" class="text-xs text-brandMuted font-mono"></span>
+                </div>
+
+                <!-- Tabla de Clientes VIP -->
+                <div class="bg-brandCard border border-brandBorder rounded-2xl overflow-x-auto shadow-xl">
+                    <table class="w-full text-left text-xs min-w-[650px]">
+                        <thead class="bg-brandBg border-b border-brandBorder text-brandMuted uppercase font-mono">
+                            <tr>
+                                <th class="p-4">Cliente / Nombre</th>
+                                <th class="p-4">Telegram Chat ID</th>
+                                <th class="p-4">Estado de Acceso</th>
+                                <th class="p-4">Fecha Alta</th>
+                                <th class="p-4 text-right">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="clientsTableBody" class="divide-y divide-brandBorder">
+                            <!-- Filas cargadas por JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- SECCIÓN 3: SEGURIDAD Y PERFIL DEL ADMINISTRADOR -->
+            <div id="sectionProfile" class="space-y-6 hidden">
+                <div class="bg-brandCard border border-brandBorder rounded-2xl p-6 shadow-xl space-y-6 max-w-2xl mx-auto">
+                    <div class="flex items-center space-x-3 border-b border-brandBorder pb-4">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-950/80 border border-indigo-800/60 flex items-center justify-center text-xl">
+                            ⚙️
+                        </div>
+                        <div>
+                            <h2 class="text-base font-bold text-white">Seguridad y Perfil del Administrador</h2>
+                            <p class="text-xs text-brandMuted">Actualiza tu nombre de usuario o contraseña maestra protegida por 2FA.</p>
+                        </div>
+                    </div>
+
+                    <!-- Datos actuales del Administrador -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-brandBg rounded-xl border border-brandBorder text-xs font-mono">
+                        <div>
+                            <span class="text-brandMuted block text-[10px] mb-0.5 uppercase">Usuario Actual</span>
+                            <span id="profileCurrentUsername" class="text-white font-bold text-sm">--</span>
+                        </div>
+                        <div>
+                            <span class="text-brandMuted block text-[10px] mb-0.5 uppercase">Telegram Chat ID (2FA)</span>
+                            <span id="profileCurrentChatId" class="text-brandAccent font-bold text-sm">--</span>
+                        </div>
+                    </div>
+
+                    <!-- Paso 1: Formulario de Solicitud de Cambio -->
+                    <form id="changeCredentialsForm" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-medium text-brandMuted mb-1">Nuevo Nombre de Usuario (Opcional)</label>
+                            <input type="text" id="changeNewUsername" placeholder="Dejar en blanco para mantener el actual" class="w-full bg-brandBg border border-brandBorder rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-brandPrimary transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-brandMuted mb-1">Nueva Contraseña Maestra (Opcional)</label>
+                            <input type="password" id="changeNewPassword" placeholder="Dejar en blanco para no cambiarla" class="w-full bg-brandBg border border-brandBorder rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-brandPrimary transition">
+                        </div>
+                        <div class="pt-2 border-t border-brandBorder/50">
+                            <label class="block text-xs font-medium text-rose-300 mb-1">Contraseña Actual * (Requerida por seguridad)</label>
+                            <input type="password" id="changeCurrentPassword" required placeholder="Ingresa tu contraseña actual" class="w-full bg-brandBg border border-brandBorder rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-brandPrimary transition">
+                        </div>
+                        <button type="submit" id="btnRequestCredChange" class="w-full bg-gradient-to-r from-brandPrimary to-brandAccent hover:from-brandPrimaryHover hover:to-brandPrimary text-white font-bold py-3 rounded-xl text-xs transition shadow-lg shadow-indigo-900/30 cursor-pointer">
+                            🚀 Solicitar Código 2FA en Telegram
+                        </button>
+                    </form>
+
+                    <!-- Paso 2: Verificación OTP 2FA (Oculto inicialmente) -->
+                    <form id="verifyCredChangeForm" class="space-y-4 hidden mt-4 pt-4 border-t border-brandBorder">
+                        <div class="p-3.5 bg-indigo-950/50 border border-indigo-800/60 rounded-xl text-xs text-brandAccent space-y-1">
+                            <span class="font-bold flex items-center space-x-1.5">
+                                <span>📩</span>
+                                <span>Código 2FA enviado a tu Telegram</span>
+                            </span>
+                            <p class="text-[11px] text-brandMuted">Ingresa el código numérico de 6 dígitos para aplicar permanentemente los cambios.</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-brandMuted mb-1">Código de 6 dígitos</label>
+                            <input type="text" id="changeOtpCode" required maxlength="6" placeholder="123456" class="w-full bg-brandBg border border-brandBorder rounded-xl px-4 py-2.5 text-center text-xl font-mono tracking-widest text-white focus:outline-none focus:border-brandPrimary">
+                        </div>
+                        <div class="flex space-x-2">
+                            <button type="button" id="btnCancelCredChange" class="w-1/3 bg-brandBg hover:bg-brandBorder text-brandMuted hover:text-white py-2.5 rounded-xl text-xs border border-brandBorder transition cursor-pointer">
+                                Cancelar
+                            </button>
+                            <button type="submit" id="btnVerifyCredChange" class="w-2/3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-lg shadow-emerald-900/30 cursor-pointer">
+                                Confirmar y Aplicar Cambios
+                            </button>
+                        </div>
+                    </form>
+
+                    <div id="profileAlert" class="hidden p-3 rounded-xl text-xs"></div>
+                </div>
+            </div>
+
+            <!-- MODAL AGREGAR / EDITAR CUENTA DE CORREO -->
             <div id="addMailModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
                 <div class="bg-brandCard border border-brandBorder rounded-2xl p-6 w-full max-w-md shadow-2xl">
                     <h3 id="modalTitle" class="text-base font-bold text-white mb-4">Agregar Cuenta de Correo</h3>
@@ -232,18 +343,22 @@
                             </div>
                         </div>
                         <div class="flex justify-end space-x-3 pt-4 border-t border-brandBorder">
-                            <button type="button" id="btnCloseModal" class="px-4 py-2 bg-brandBg hover:bg-brandBorder text-xs text-white rounded-xl border border-brandBorder">Cancelar</button>
-                            <button type="submit" class="px-4 py-2 bg-brandPrimary hover:bg-brandPrimaryHover text-xs text-white font-medium rounded-xl shadow-lg shadow-indigo-900/30">Guardar y Cifrar</button>
+                            <button type="button" id="btnCloseModal" class="px-4 py-2 bg-brandBg hover:bg-brandBorder text-xs text-white rounded-xl border border-brandBorder cursor-pointer">Cancelar</button>
+                            <button type="submit" class="px-4 py-2 bg-brandPrimary hover:bg-brandPrimaryHover text-xs text-white font-medium rounded-xl shadow-lg shadow-indigo-900/30 cursor-pointer">Guardar y Cifrar</button>
                         </div>
                     </form>
                 </div>
             </div>
 
-            <!-- Modal Autorizar Cliente VIP -->
+            <!-- MODAL AUTORIZAR / EDITAR CLIENTE VIP -->
             <div id="authorizeClientModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
                 <div class="bg-brandCard border border-brandBorder rounded-2xl p-6 w-full max-w-md shadow-2xl">
-                    <h3 class="text-base font-bold text-white mb-4">Autorizar Cliente VIP (Lista Blanca)</h3>
+                    <h3 id="authClientModalTitle" class="text-base font-bold text-white mb-4">Autorizar Cliente VIP (Lista Blanca)</h3>
                     <form id="authorizeClientForm" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-medium text-brandMuted mb-1">Nombre o Alias del Cliente</label>
+                            <input type="text" id="authClientFullName" placeholder="Ej. Carlos Pérez - Pantalla 1" class="w-full bg-brandBg border border-brandBorder rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-brandPrimary">
+                        </div>
                         <div>
                             <label class="block text-xs font-medium text-brandMuted mb-1">Telegram Chat ID del Cliente</label>
                             <input type="number" id="authClientChatId" required placeholder="Ej. 123456789" class="w-full bg-brandBg border border-brandBorder rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-brandPrimary font-mono">
@@ -256,10 +371,36 @@
                             </select>
                         </div>
                         <div class="flex justify-end space-x-3 pt-4 border-t border-brandBorder">
-                            <button type="button" onclick="closeAuthorizeClientModal()" class="px-4 py-2 bg-brandBg hover:bg-brandBorder text-xs text-white rounded-xl border border-brandBorder">Cancelar</button>
-                            <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-xs text-white font-medium rounded-xl shadow-lg shadow-emerald-900/30">Guardar Autorización</button>
+                            <button type="button" onclick="closeAuthorizeClientModal()" class="px-4 py-2 bg-brandBg hover:bg-brandBorder text-xs text-white rounded-xl border border-brandBorder cursor-pointer">Cancelar</button>
+                            <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-xs text-white font-medium rounded-xl shadow-lg shadow-emerald-900/30 cursor-pointer">Guardar Cliente</button>
                         </div>
                     </form>
+                </div>
+            </div>
+
+            <!-- MODAL DE CONFIRMACIÓN DE ELIMINACIÓN REUTILIZABLE -->
+            <div id="deleteConfirmModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+                <div class="bg-brandCard border border-rose-900/50 rounded-2xl p-6 w-full max-w-sm shadow-2xl space-y-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-full bg-rose-950/80 border border-rose-800/60 flex items-center justify-center text-rose-400 text-lg">
+                            ⚠️
+                        </div>
+                        <div>
+                            <h3 id="deleteModalTitle" class="text-sm font-bold text-white">Confirmar Eliminación</h3>
+                            <p class="text-[11px] text-brandMuted">Esta acción es permanente e irreversible.</p>
+                        </div>
+                    </div>
+                    <p id="deleteModalMessage" class="text-xs text-brandText leading-relaxed bg-brandBg p-3 rounded-xl border border-brandBorder">
+                        ¿Estás seguro de continuar?
+                    </p>
+                    <div class="flex justify-end space-x-2 pt-2">
+                        <button type="button" id="btnCancelDelete" class="px-4 py-2 bg-brandBg hover:bg-brandBorder text-xs text-white rounded-xl border border-brandBorder transition cursor-pointer">
+                            Cancelar
+                        </button>
+                        <button type="button" id="btnConfirmDelete" class="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-xs text-white font-bold rounded-xl transition shadow-lg shadow-rose-950/50 cursor-pointer">
+                            🗑️ Sí, Eliminar
+                        </button>
+                    </div>
                 </div>
             </div>
 

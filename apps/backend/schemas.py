@@ -79,12 +79,28 @@ class MailAccountResponse(BaseModel):
 class ClientUserResponse(BaseModel):
     id: str
     telegram_chat_id: int
+    full_name: Optional[str] = None
     is_active: bool
     is_approved: bool
     created_at: str
 
 class ClientApproveRequest(BaseModel):
     telegram_chat_id: int = Field(..., description="Telegram Chat ID del cliente a autorizar")
+    full_name: Optional[str] = Field(None, description="Nombre o alias del cliente")
     is_approved: bool = Field(True, description="Estado de autorización")
+
+# --- Esquemas Perfil y Seguridad Admin ---
+class AdminProfileResponse(BaseModel):
+    username: str
+    telegram_chat_id: int
+    created_at: str
+
+class AdminChangeCredentialsRequest(BaseModel):
+    current_password: str = Field(..., description="Contraseña actual")
+    new_username: Optional[str] = Field(None, min_length=4, description="Nuevo nombre de usuario")
+    new_password: Optional[str] = Field(None, min_length=6, description="Nueva contraseña")
+
+class AdminChangeCredentialsVerifyRequest(BaseModel):
+    otp_code: str = Field(..., min_length=6, max_length=6, description="Código 2FA de 6 dígitos recibido en Telegram")
 
 

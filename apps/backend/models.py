@@ -40,6 +40,7 @@ class User(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     telegram_chat_id = Column(BigInteger, unique=True, nullable=False, index=True)
     username = Column(String(100), unique=True, nullable=True)
+    full_name = Column(String(150), nullable=True)
     hashed_password = Column(String(255), nullable=True)
     role = Column(SQLEnum(UserRole), nullable=False, default=UserRole.CLIENT)
     is_active = Column(Boolean, default=True, nullable=False)
