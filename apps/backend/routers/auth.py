@@ -21,7 +21,7 @@ async def request_otp(body: OTPRequest, db: AsyncSession = Depends(get_db)):
     result = await db.execute(stmt)
     user = result.scalar_one_or_none()
 
-    if not user or not user.is_approved:
+    if not user:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Cuenta no autorizada. Contacta al administrador para solicitar acceso a la plataforma."
@@ -31,6 +31,12 @@ async def request_otp(body: OTPRequest, db: AsyncSession = Depends(get_db)):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="El usuario se encuentra inactivo o bloqueado."
+        )
+
+    if not user.can_extract_codes:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Cuenta no autorizada en la Lista Blanca VIP. Contacta al administrador."
         )
 
     otp_code = await redis_service.generate_otp(body.telegram_chat_id)

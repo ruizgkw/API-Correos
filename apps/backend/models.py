@@ -48,6 +48,19 @@ class User(Base):
 
     logs = relationship("ExtractionLog", back_populates="user", cascade="all, delete-orphan")
 
+    @property
+    def can_extract_codes(self) -> bool:
+        """
+        Determina si el usuario tiene permiso para solicitar OTP y extraer códigos.
+        - Los administradores (ADMIN) tienen permiso de extracción por defecto.
+        - Los clientes (CLIENT) requieren estar activos y aprobados en la Lista Blanca VIP.
+        """
+        if not self.is_active:
+            return False
+        if self.role == UserRole.ADMIN:
+            return True
+        return bool(self.is_approved)
+
 
 class StreamingPlatform(Base):
     __tablename__ = "streaming_platforms"

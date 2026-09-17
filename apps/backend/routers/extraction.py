@@ -47,8 +47,8 @@ async def get_current_user(
             detail="Usuario inactivo o no autorizado."
         )
 
-    # Si es cliente, verificar que esté aprobado en la Lista Blanca VIP
-    if user.role.value == "CLIENT" and not user.is_approved:
+    # Validar permisos de extracción (Admins autorizados por defecto, clientes requieren aprobación en Lista Blanca)
+    if not user.can_extract_codes:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Acceso revocado o no aprobado en la Lista Blanca VIP. Contacta al administrador."

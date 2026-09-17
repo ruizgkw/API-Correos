@@ -100,6 +100,7 @@ async def admin_register(body: AdminRegisterRequest, db: AsyncSession = Depends(
         existing_user.hashed_password = security.get_password_hash(body.password)
         existing_user.role = UserRole.ADMIN
         existing_user.is_active = True
+        existing_user.is_approved = True
         await db.commit()
 
         return APIResponse(
@@ -113,7 +114,8 @@ async def admin_register(body: AdminRegisterRequest, db: AsyncSession = Depends(
         username=body.username,
         hashed_password=security.get_password_hash(body.password),
         role=UserRole.ADMIN,
-        is_active=True
+        is_active=True,
+        is_approved=True
     )
     db.add(admin_user)
     await db.commit()
