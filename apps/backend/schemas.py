@@ -39,6 +39,7 @@ class AdminRegisterRequest(BaseModel):
     telegram_chat_id: int = Field(..., description="Telegram Chat ID del Administrador", example=123456789)
     username: str = Field(..., min_length=4, example="admin")
     password: str = Field(..., min_length=6, example="AdminPass123!")
+    license_key: str = Field(..., min_length=4, description="Licencia de Activación del Sistema", example="EA-C728A8A328F6D50E")
 
 class AdminLoginPassRequest(BaseModel):
     username: str = Field(..., example="admin")

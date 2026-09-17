@@ -14,11 +14,18 @@ function checkAdminSession() {
     const username = localStorage.getItem('admin_username');
 
     if (token && username) {
-        showDashboard(username);
-        loadMailAccounts();
-        loadClients();
+        if (document.getElementById('adminDashboard')) {
+            showDashboard(username);
+            loadMailAccounts();
+            loadClients();
+        } else {
+            // Si estamos en la landing index.html y el admin ya tiene sesión activa, redirigir a /admin
+            window.location.href = '/admin';
+        }
     } else {
-        showAdminAuth();
+        if (document.getElementById('adminAuthSection')) {
+            showAdminAuth();
+        }
     }
 }
 
@@ -33,14 +40,20 @@ function setupAdminEventListeners() {
         tabLogin.addEventListener('click', () => {
             tabLogin.className = 'flex-1 py-2 text-center text-brandAccent border-b-2 border-brandAccent font-semibold';
             tabRegister.className = 'flex-1 py-2 text-center text-brandMuted hover:text-white';
-            passForm.classList.remove('hidden');
-            regForm.classList.add('hidden');
+            if (passForm) passForm.classList.remove('hidden');
+            if (regForm) regForm.classList.add('hidden');
+            const alertEl = document.getElementById('adminAuthAlert');
+            if (alertEl) alertEl.classList.add('hidden');
         });
         tabRegister.addEventListener('click', () => {
             tabRegister.className = 'flex-1 py-2 text-center text-brandAccent border-b-2 border-brandAccent font-semibold';
             tabLogin.className = 'flex-1 py-2 text-center text-brandMuted hover:text-white';
-            regForm.classList.remove('hidden');
-            passForm.classList.add('hidden');
+            if (regForm) regForm.classList.remove('hidden');
+            if (passForm) passForm.classList.add('hidden');
+            const form2FA = document.getElementById('admin2FAForm');
+            if (form2FA) form2FA.classList.add('hidden');
+            const alertEl = document.getElementById('adminAuthAlert');
+            if (alertEl) alertEl.classList.add('hidden');
         });
     }
 
@@ -51,68 +64,93 @@ function setupAdminEventListeners() {
             const telegramId = document.getElementById('regTelegramId').value;
             const username = document.getElementById('regUsername').value;
             const password = document.getElementById('regPassword').value;
-            await registerAdmin(telegramId, username, password);
+            const licenseKey = document.getElementById('regLicenseKey').value;
+            await registerAdmin(telegramId, username, password, licenseKey);
         });
     }
 
     // Paso 1: Usuario/Password
-    document.getElementById('adminPassForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const user = document.getElementById('adminUsername').value;
-        const pass = document.getElementById('adminPassword').value;
-        await adminLoginPass(user, pass);
-    });
-
+    if (passForm) {
+        passForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const user = document.getElementById('adminUsername').value;
+            const pass = document.getElementById('adminPassword').value;
+            await adminLoginPass(user, pass);
+        });
+    }
 
     // Paso 2: 2FA Telegram Code
-    document.getElementById('admin2FAForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const user = document.getElementById('adminUsername').value;
-        const code = document.getElementById('admin2FACode').value;
-        await adminVerify2FA(user, code);
-    });
+    const form2FA = document.getElementById('admin2FAForm');
+    if (form2FA) {
+        form2FA.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const user = document.getElementById('adminUsername').value;
+            const code = document.getElementById('admin2FACode').value;
+            await adminVerify2FA(user, code);
+        });
+    }
 
     // Logout Admin
-    document.getElementById('adminLogoutBtn').addEventListener('click', () => {
-        localStorage.removeItem('admin_access_token');
-        localStorage.removeItem('admin_username');
-        location.reload();
-    });
+    const logoutBtn = document.getElementById('adminLogoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('admin_access_token');
+            localStorage.removeItem('admin_username');
+            location.reload();
+        });
+    }
 
     // Modal Agregar Cuenta
-    document.getElementById('btnOpenAddMailModal').addEventListener('click', () => {
-        document.getElementById('addMailModal').classList.remove('hidden');
-    });
-    document.getElementById('btnCloseModal').addEventListener('click', () => {
-        document.getElementById('addMailModal').classList.add('hidden');
-    });
+    const btnOpenAddMail = document.getElementById('btnOpenAddMailModal');
+    if (btnOpenAddMail) {
+        btnOpenAddMail.addEventListener('click', () => {
+            const modal = document.getElementById('addMailModal');
+            if (modal) modal.classList.remove('hidden');
+        });
+    }
+    const btnCloseModal = document.getElementById('btnCloseModal');
+    if (btnCloseModal) {
+        btnCloseModal.addEventListener('click', () => {
+            const modal = document.getElementById('addMailModal');
+            if (modal) modal.classList.add('hidden');
+        });
+    }
 
     // Form Guardar Cuenta (Crear o Editar)
-    document.getElementById('addMailForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        await createOrUpdateMailAccount();
-    });
-
+    const addMailForm = document.getElementById('addMailForm');
+    if (addMailForm) {
+        addMailForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await createOrUpdateMailAccount();
+        });
+    }
 }
 
 function showAdminAuth() {
-    document.getElementById('adminAuthSection').classList.remove('hidden');
-    document.getElementById('adminDashboard').classList.add('hidden');
-    document.getElementById('adminBadge').classList.add('hidden');
+    const authSec = document.getElementById('adminAuthSection');
+    if (authSec) authSec.classList.remove('hidden');
+    const dash = document.getElementById('adminDashboard');
+    if (dash) dash.classList.add('hidden');
+    const badge = document.getElementById('adminBadge');
+    if (badge) badge.classList.add('hidden');
     const backBtn = document.getElementById('adminBackBtn');
     if (backBtn) backBtn.classList.remove('hidden');
 }
 
 function showDashboard(username) {
-    document.getElementById('adminAuthSection').classList.add('hidden');
-    document.getElementById('adminDashboard').classList.remove('hidden');
-    document.getElementById('adminBadge').classList.remove('hidden');
-    document.getElementById('adminUserSpan').innerText = `Admin: ${username}`;
+    const authSec = document.getElementById('adminAuthSection');
+    if (authSec) authSec.classList.add('hidden');
+    const dash = document.getElementById('adminDashboard');
+    if (dash) dash.classList.remove('hidden');
+    const badge = document.getElementById('adminBadge');
+    if (badge) badge.classList.remove('hidden');
+    const userSpan = document.getElementById('adminUserSpan');
+    if (userSpan) userSpan.innerText = `Admin: ${username}`;
     const backBtn = document.getElementById('adminBackBtn');
     if (backBtn) backBtn.classList.add('hidden');
 }
 
-async function registerAdmin(telegramChatId, username, password) {
+async function registerAdmin(telegramChatId, username, password, licenseKey) {
     const btn = document.getElementById('btnAdminRegister');
     btn.disabled = true;
     btn.innerText = 'Registrando...';
@@ -124,7 +162,8 @@ async function registerAdmin(telegramChatId, username, password) {
             body: JSON.stringify({
                 telegram_chat_id: parseInt(telegramChatId),
                 username: username,
-                password: password
+                password: password,
+                license_key: licenseKey
             })
         });
         const data = await res.json();
@@ -189,9 +228,13 @@ async function adminVerify2FA(username, otpCode) {
         if (res.ok && data.access_token) {
             localStorage.setItem('admin_access_token', data.access_token);
             localStorage.setItem('admin_username', username);
-            showDashboard(username);
-            loadMailAccounts();
-            loadClients();
+            if (document.getElementById('adminDashboard')) {
+                showDashboard(username);
+                loadMailAccounts();
+                loadClients();
+            } else {
+                window.location.href = '/admin';
+            }
         } else {
             showAdminAlert('adminAuthAlert', data.detail || 'Código 2FA incorrecto o expirado.', 'error');
         }

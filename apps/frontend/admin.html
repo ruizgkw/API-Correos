@@ -91,6 +91,13 @@
                     <label class="block text-xs font-medium text-brandMuted mb-1">Contraseña Maestra</label>
                     <input type="password" id="regPassword" required placeholder="••••••••" class="w-full bg-brandBg border border-brandBorder rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-brandPrimary">
                 </div>
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="block text-xs font-medium text-brandMuted">Licencia de Activación</label>
+                        <span class="text-[10px] text-brandAccent font-mono">Requerida</span>
+                    </div>
+                    <input type="text" id="regLicenseKey" required placeholder="EA-XXXX-XXXX-XXXX" class="w-full bg-brandBg border border-brandBorder rounded-xl px-4 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-brandPrimary uppercase">
+                </div>
                 <button type="submit" id="btnAdminRegister" class="w-full bg-brandAccent hover:bg-indigo-400 text-brandBg font-bold py-3 rounded-xl text-sm transition">
                     Crear Administrador
                 </button>

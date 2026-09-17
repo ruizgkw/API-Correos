@@ -56,9 +56,23 @@ async def get_current_admin(
 @router.post("/auth/register", response_model=APIResponse)
 async def admin_register(body: AdminRegisterRequest, db: AsyncSession = Depends(get_db)):
     """
-    Registra un nuevo Administrador. Si el Telegram Chat ID ya existía como cliente regular,
-    lo promueve a rol de Administrador asignándole su usuario y contraseña.
+    Registra un nuevo Administrador validando la Licencia de Activación.
+    Si el Telegram Chat ID ya existía como cliente regular, lo promueve a rol de Administrador.
     """
+    # 0. Validar Licencia de Activación del Servidor
+    server_license = os.getenv("ADMIN_LICENSE_KEY", "").strip()
+    if not server_license:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="El servidor no tiene configurada una clave de licencia de activación. Contacte al proveedor."
+        )
+
+    if body.license_key.strip() != server_license:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Licencia de activación inválida o no autorizada para este servidor."
+        )
+
     # 1. Validar que el username no esté en uso por otro admin
     username_stmt = select(User).where(User.username == body.username)
     username_res = await db.execute(username_stmt)

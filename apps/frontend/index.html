@@ -207,49 +207,110 @@
                 </div>
             </div>
 
-            <!-- COLUMNA DERECHA: CAJA ESTÁTICA STICKY DE REGÍSTRATE O INICIA SESIÓN COMO ADMIN (EN MÓVIL ES UN MODAL) -->
+            <!-- COLUMNA DERECHA: CAJA ESTÁTICA STICKY DE LOGIN / REGISTRO ADMIN (EN MÓVIL ES UN MODAL) -->
             <div id="rightAdminColumn" class="hidden lg:block lg:col-span-5 w-full max-w-md mx-auto lg:ml-auto sticky top-24 z-50">
                 
-                <div id="adminCardWrapper" class="w-full bg-brandCard border border-brandBorder rounded-2xl p-5 md:p-8 shadow-2xl space-y-4 relative max-h-[90vh] overflow-y-auto my-auto">
+                <div id="adminCardWrapper" class="w-full bg-brandCard border border-brandBorder rounded-2xl p-5 md:p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto my-auto">
                     
                     <!-- BOTÓN CERRAR MODAL (Solo visible en móvil) -->
                     <button id="closeAdminModalBtn" class="lg:hidden absolute top-4 right-4 text-brandMuted hover:text-white p-1.5 rounded-lg bg-brandBg border border-brandBorder">
                         ✕
                     </button>
 
-                    <div class="text-center space-y-2 border-b border-brandBorder pb-4">
-                        <div class="inline-flex p-3 bg-brandBg border border-brandBorder rounded-2xl mb-1 shadow-inner">
-                            <img src="/favicon.svg" class="w-8 h-8">
-                        </div>
-                        <h2 class="text-2xl font-bold text-white tracking-tight">Comienza a Automatizar</h2>
-                        <p class="text-xs text-brandMuted">Plataforma exclusiva para Administradores de Cuentas.</p>
-                    </div>
-
-                    <!-- BOTÓN PRINCIPAL: REGÍSTRATE O INICIA SESIÓN COMO ADMIN -->
-                    <div class="bg-brandBg border border-brandBorder rounded-xl p-5 space-y-4 hover:border-brandPrimary transition">
-                        <div class="flex items-center space-x-3">
-                            <span class="text-2xl">🔐</span>
-                            <div>
-                                <h3 class="text-sm font-bold text-white">Acceso Administrador</h3>
-                                <p class="text-[11px] text-brandMuted">Gestiona tus correos, servidores y autoriza a tus clientes VIP.</p>
+                    <!-- SECCIÓN DE AUTENTICACIÓN ADMIN DIRECTA -->
+                    <div id="adminAuthSection" class="w-full space-y-5">
+                        <div class="text-center space-y-2">
+                            <div class="inline-flex p-3 bg-brandBg border border-brandBorder rounded-2xl shadow-inner">
+                                <img src="/favicon.svg" class="w-8 h-8">
+                            </div>
+                            <div class="space-y-1">
+                                <div class="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-indigo-950/70 border border-indigo-800/50 text-[10px] font-mono text-brandAccent">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-brandPrimary animate-pulse"></span>
+                                    <span>Panel de Control • 2FA</span>
+                                </div>
+                                <h2 class="text-2xl font-extrabold text-white tracking-tight">Acceso Administrador</h2>
+                                <p class="text-xs text-brandMuted">Inicia sesión o activa tu instalación con tu licencia.</p>
                             </div>
                         </div>
-                        <a href="/admin" class="w-full bg-gradient-to-r from-brandPrimary via-brandAccent to-purple-500 hover:from-brandPrimaryHover hover:to-brandPrimary text-white font-extrabold py-4 rounded-xl text-sm transition duration-150 shadow-xl shadow-indigo-900/40 flex items-center justify-center space-x-2 text-center">
-                            <span>Regístrate o Inicia Sesión como Admin</span>
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-                        </a>
-                    </div>
 
-                    <!-- NOTA DE EXCLUSIVIDAD AL PIE (SIN BOTÓN CLIENTE) -->
-                    <div class="p-4 bg-indigo-950/30 border border-indigo-800/40 rounded-xl text-center space-y-1">
-                        <span class="text-[11px] font-semibold text-brandAccent block">🔒 ¿Eres cliente final?</span>
-                        <p class="text-[10px] text-brandMuted leading-normal">
-                            Solicita tu enlace de acceso directo y autorización VIP a tu proveedor administrador.
-                        </p>
-                    </div>
+                        <!-- Pestañas Iniciar Sesión / Registrarse -->
+                        <div class="flex border-b border-brandBorder text-xs font-medium">
+                            <button type="button" id="tabLogin" class="flex-1 py-2.5 text-center text-brandAccent border-b-2 border-brandAccent font-semibold cursor-pointer">Iniciar Sesión</button>
+                            <button type="button" id="tabRegister" class="flex-1 py-2.5 text-center text-brandMuted hover:text-white cursor-pointer">Registrarse</button>
+                        </div>
 
-                    <div class="text-center pt-1 border-t border-brandBorder/40">
-                        <span class="text-[10px] text-brandMuted font-mono">EAcodigos v1.0 • Encriptación SSL 256-bit</span>
+                        <!-- Paso 1: Usuario y Password (Login) -->
+                        <form id="adminPassForm" class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-medium text-brandMuted mb-1">Usuario Administrador</label>
+                                <input type="text" id="adminUsername" required placeholder="admin" class="w-full bg-brandBg border border-brandBorder rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-brandPrimary transition">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-brandMuted mb-1">Contraseña</label>
+                                <input type="password" id="adminPassword" required placeholder="••••••••" class="w-full bg-brandBg border border-brandBorder rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-brandPrimary transition">
+                            </div>
+                            <button type="submit" id="btnAdminPass" class="w-full bg-gradient-to-r from-brandPrimary to-brandAccent hover:from-brandPrimaryHover hover:to-brandPrimary text-white font-bold py-3.5 rounded-xl text-sm transition shadow-lg shadow-indigo-900/40 cursor-pointer">
+                                Validar Credenciales
+                            </button>
+                        </form>
+
+                        <!-- Formulario de Registro de Administrador con Licencia -->
+                        <form id="adminRegisterForm" class="space-y-3.5 hidden">
+                            <div>
+                                <label class="block text-xs font-medium text-brandMuted mb-1">Tu Telegram Chat ID (para 2FA)</label>
+                                <input type="number" id="regTelegramId" required placeholder="Ej. 123456789" class="w-full bg-brandBg border border-brandBorder rounded-xl px-4 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-brandPrimary transition">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-brandMuted mb-1">Nuevo Usuario Admin</label>
+                                <input type="text" id="regUsername" required placeholder="admin" class="w-full bg-brandBg border border-brandBorder rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-brandPrimary transition">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-brandMuted mb-1">Contraseña Maestra</label>
+                                <input type="password" id="regPassword" required placeholder="••••••••" class="w-full bg-brandBg border border-brandBorder rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-brandPrimary transition">
+                            </div>
+                            <div>
+                                <div class="flex justify-between items-center mb-1">
+                                    <label class="block text-xs font-medium text-brandMuted">Licencia de Activación</label>
+                                    <span class="text-[10px] text-brandAccent font-mono">Requerida</span>
+                                </div>
+                                <input type="text" id="regLicenseKey" required placeholder="EA-XXXX-XXXX-XXXX" class="w-full bg-brandBg border border-brandBorder rounded-xl px-4 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-brandPrimary uppercase transition">
+                            </div>
+                            <button type="submit" id="btnAdminRegister" class="w-full bg-gradient-to-r from-brandPrimary via-brandAccent to-purple-500 hover:from-brandPrimaryHover hover:to-brandPrimary text-white font-bold py-3.5 rounded-xl text-sm transition shadow-lg shadow-indigo-900/40 cursor-pointer">
+                                Activar y Registrar Admin
+                            </button>
+                        </form>
+
+                        <!-- Paso 2: 2FA Telegram Code -->
+                        <form id="admin2FAForm" class="space-y-4 hidden">
+                            <div class="p-3 bg-indigo-950/40 border border-indigo-800/50 rounded-xl text-xs text-brandAccent space-y-1">
+                                <div class="font-semibold flex items-center space-x-1.5">
+                                    <span>📩</span>
+                                    <span>Código 2FA Enviado</span>
+                                </div>
+                                <p class="text-[11px] text-brandMuted">Revisa tu chat en Telegram e ingresa el código numérico de 6 dígitos.</p>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-brandMuted mb-1">Código 2FA (6 dígitos)</label>
+                                <input type="text" id="admin2FACode" required maxlength="6" placeholder="123456" class="w-full bg-brandBg border border-brandBorder rounded-xl px-4 py-2.5 text-center text-2xl font-mono tracking-widest text-white focus:outline-none focus:border-brandPrimary transition">
+                            </div>
+                            <button type="submit" id="btnAdmin2FA" class="w-full bg-gradient-to-r from-brandPrimary via-brandAccent to-purple-500 hover:from-brandPrimaryHover hover:to-brandPrimary text-white font-bold py-3.5 rounded-xl text-sm transition shadow-lg shadow-indigo-900/40 cursor-pointer">
+                                Ingresar al Panel de Control
+                            </button>
+                        </form>
+
+                        <div id="adminAuthAlert" class="hidden p-3.5 rounded-xl text-xs"></div>
+
+                        <!-- NOTA DE EXCLUSIVIDAD AL PIE (SIN BOTÓN CLIENTE) -->
+                        <div class="p-3.5 bg-indigo-950/30 border border-indigo-800/40 rounded-xl text-center space-y-1">
+                            <span class="text-[11px] font-semibold text-brandAccent block">🔒 ¿Eres cliente final?</span>
+                            <p class="text-[10px] text-brandMuted leading-normal">
+                                Solicita tu enlace de acceso directo y autorización VIP a tu proveedor administrador.
+                            </p>
+                        </div>
+
+                        <div class="text-center pt-1 border-t border-brandBorder/40">
+                            <span class="text-[10px] text-brandMuted font-mono">EAcodigos v1.0 • Encriptación SSL 256-bit</span>
+                        </div>
                     </div>
 
                 </div>
@@ -325,5 +386,6 @@
             });
         });
     </script>
+    <script src="/static/admin.js"></script>
 </body>
 </html>
